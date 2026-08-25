@@ -1,0 +1,9 @@
+$kind: http-request
+name: Delete User
+method: DELETE
+url: '{{baseUrl}}/users/{{userId}}'
+order: 6000
+description: Deletes a user by ID. Returns 204 No Content.
+pathVariables:
+  - key: userId
+    value: '1'

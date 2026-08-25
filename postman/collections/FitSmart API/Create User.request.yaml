@@ -1,0 +1,27 @@
+$kind: http-request
+name: Create User
+method: POST
+url: '{{baseUrl}}/users'
+order: 2000
+description: Creates a new user. Returns 201 Created with the created user object.
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "nome": "João",
+      "sobrenome": "Fernandes",
+      "email": "joao@example.com",
+      "senha": "senha123",
+      "telefone": "11999999999",
+      "data_nascimento": "1990-01-15",
+      "sexo": "M",
+      "tipo_usuario": "cliente",
+      "ativo": true,
+      "cep": "01310-100",
+      "logradouro": "Avenida Paulista",
+      "numero_residencial": "1000",
+      "complemento": "Apto 42"
+    }

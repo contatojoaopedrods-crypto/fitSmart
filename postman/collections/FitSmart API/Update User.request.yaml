@@ -1,0 +1,23 @@
+$kind: http-request
+name: Update User
+method: PUT
+url: '{{baseUrl}}/users/{{userId}}'
+order: 5000
+description: Updates an existing user by ID. Only provided fields are updated. Returns 200 with updated user.
+pathVariables:
+  - key: userId
+    value: '1'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "nome": "João Atualizado",
+      "telefone": "11988888888",
+      "cep": "01310-200",
+      "logradouro": "Rua Augusta",
+      "numero_residencial": "500",
+      "complemento": "Sala 10"
+    }

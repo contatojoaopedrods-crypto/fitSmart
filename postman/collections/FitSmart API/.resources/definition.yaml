@@ -1,0 +1,6 @@
+$kind: collection
+name: FitSmart API
+description: Collection for the FitSmart Spring Boot backend API.
+variables:
+  - key: baseUrl
+    value: 'http://localhost:8080'

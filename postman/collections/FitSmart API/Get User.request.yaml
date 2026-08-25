@@ -1,0 +1,9 @@
+$kind: http-request
+name: Get User
+method: GET
+url: '{{baseUrl}}/users/{{userId}}'
+order: 4000
+description: Returns a single user by ID. Returns 404 if not found.
+pathVariables:
+  - key: userId
+    value: '1'

@@ -17,9 +17,13 @@ import jakarta.servlet.http.HttpServletRequest;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-        @ExceptionHandler(EmailAlreadyExistsException.class)
-        public ResponseEntity<ApiErrorResponse> handleEmailAlreadyExists(
-                        EmailAlreadyExistsException exception,
+        @ExceptionHandler({
+                        EmailAlreadyExistsException.class,
+                        CrefAlreadyExistsException.class
+        })
+
+        public ResponseEntity<ApiErrorResponse> handleConflict(
+                        RuntimeException exception,
                         HttpServletRequest request) {
 
                 ApiErrorResponse response = new ApiErrorResponse(

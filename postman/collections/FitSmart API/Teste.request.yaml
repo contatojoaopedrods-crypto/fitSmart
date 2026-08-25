@@ -1,0 +1,6 @@
+$kind: http-request
+name: Teste
+method: GET
+url: '{{baseUrl}}/teste'
+order: 1000
+description: Health check endpoint. Returns a plain text message confirming the backend is running.

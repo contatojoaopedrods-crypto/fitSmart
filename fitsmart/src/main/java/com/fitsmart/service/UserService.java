@@ -182,7 +182,7 @@ public class UserService {
         userRepository.save(user);
     }
 
-    private UserResponse convertToResponse(User user) {
+    public UserResponse convertToResponse(User user) {
         return new UserResponse(
                 user.getId(),
                 user.getNome(),
