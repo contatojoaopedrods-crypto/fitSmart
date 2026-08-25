@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
+import com.fitsmart.dto.UpdateEmailRequest;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import com.fitsmart.repository.UserRepository;
 
@@ -21,6 +24,7 @@ import com.fitsmart.dto.UpdatePasswordRequest;
 import com.fitsmart.dto.UpdateUserRequest;
 import com.fitsmart.dto.UserResponse;
 import com.fitsmart.service.UserService;
+
 
 @RestController
 @RequestMapping("/users")
@@ -72,24 +76,65 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{id}")
-    public ResponseEntity<UserResponse> updateUser(
-            @PathVariable Long id,
+    @PatchMapping("/me")
+    public ResponseEntity<UserResponse> updateCurrrentUser(
+            @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody UpdateUserRequest request) {
 
-        UserResponse response = userService.updateUser(id, request);
+        Long userId = getAuthenticatedUserId(jwt);
+
+        UserResponse response = userService.updateUser(userId, request);
 
         return ResponseEntity.ok(response);
     }
 
-    @PatchMapping("/{id}/password")
+    @PatchMapping("/me/password")
     public ResponseEntity<Void> updatePassword(
-            @PathVariable Long id,
+            @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody UpdatePasswordRequest request) {
 
-        userService.updatePassword(id, request);
+        Long userId = getAuthenticatedUserId(jwt);
+
+        userService.updatePassword(userId, request);
 
         return ResponseEntity.noContent().build();
+    }
+
+
+    @PatchMapping("/me/email")
+    public ResponseEntity<UserResponse> updateEmail(
+            @AuthenticationPrincipal Jwt jwt,
+            @Valid @RequestBody UpdateEmailRequest request) {
+
+        Long userId = getAuthenticatedUserId(jwt);
+
+        UserResponse response = userService.updateEmail(userId, request);
+
+        return ResponseEntity.ok(response);
+    }
+
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> getCurrentUser(
+            @AuthenticationPrincipal Jwt jwt) {
+        
+        Long userId = getAuthenticatedUserId(jwt);
+
+        UserResponse response = userService.getUserByid(userId);
+        
+        return ResponseEntity.ok(response);
+    }
+    
+
+    private Long getAuthenticatedUserId(Jwt jwt) {
+
+        Object userIdClaim = jwt.getClaim("user_id");
+
+        if (userIdClaim instanceof Number number) {
+            return number.longValue();
+        }
+
+        return Long.valueOf(userIdClaim.toString());
     }
 
 }

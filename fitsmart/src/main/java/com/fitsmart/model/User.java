@@ -13,6 +13,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+
+import com.fitsmart.model.enums.UserRole;
+
 
 @Getter
 @Setter
@@ -34,7 +39,8 @@ public class User {
     private LocalDate data_nascimento;
     private String sexo;
 
-    private String tipo_usuario;
+    @Enumerated(EnumType.STRING)
+    private UserRole tipo_usuario;
 
     private boolean ativo;
     private LocalDateTime data_cadastro;

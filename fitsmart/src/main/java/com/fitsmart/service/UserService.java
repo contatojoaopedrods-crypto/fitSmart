@@ -11,10 +11,13 @@ import com.fitsmart.dto.CreateUserRequest;
 import com.fitsmart.dto.UserResponse;
 import com.fitsmart.exception.ResourceNotFoundException;
 import com.fitsmart.model.User;
+import com.fitsmart.model.enums.UserRole;
 import com.fitsmart.dto.UpdateUserRequest;
 import java.util.Locale;
 import com.fitsmart.dto.UpdatePasswordRequest;
 import com.fitsmart.exception.InvalidPasswordException;
+import com.fitsmart.dto.UpdateEmailRequest;
+import com.fitsmart.exception.InvalidEmailException;
 
 import com.fitsmart.exception.EmailAlreadyExistsException;
 
@@ -57,7 +60,7 @@ public class UserService {
         user.setComplemento(request.complemento());
 
         user.setAtivo(true);
-        user.setTipo_usuario("ALUNO");
+        user.setTipo_usuario(UserRole.ALUNO);
         user.setData_cadastro(LocalDateTime.now());
 
         User newUser = userRepository.save(user);
@@ -195,6 +198,42 @@ public class UserService {
                 user.getLogradouro(),
                 user.getNumero_residencial(),
                 user.getComplemento());
+    }
+
+    public UserResponse updateEmail(
+            Long id,
+            UpdateEmailRequest request) {
+
+        User user = findUserById(id);
+
+        boolean passwordMatches = passwordEncoder.matches(
+                request.senhaAtual(),
+                user.getSenha());
+
+        if (!passwordMatches) {
+            throw new InvalidPasswordException(
+                    "A senha atual está incorreta");
+        }
+
+        String newEmail = request.novoEmail()
+                .trim()
+                .toLowerCase(Locale.ROOT);
+
+        if (newEmail.equalsIgnoreCase(user.getEmail())) {
+            throw new InvalidEmailException(
+                    "O novo e-mail deve ser diferente do e-mail atual");
+        }
+
+        if (userRepository.existsByEmailIgnoreCase(newEmail)) {
+            throw new EmailAlreadyExistsException(
+                    "Já existe um usuário cadastrado com este e-mail");
+        }
+
+        user.setEmail(newEmail);
+
+        User updatedUser = userRepository.save(user);
+
+        return convertToResponse(updatedUser);
     }
 
 }

@@ -2,6 +2,7 @@ package com.fitsmart.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import com.fitsmart.model.enums.UserRole;
 
 public record UserResponse(
         Long id,
@@ -11,7 +12,7 @@ public record UserResponse(
         String telefone,
         LocalDate data_nascimento,
         String sexo,
-        String tipo_usuario,
+        UserRole tipo_usuario,
         boolean ativo,
         LocalDateTime data_cadastro,
         String cep,

@@ -1,0 +1,6 @@
+$kind: collection
+name: FitSmart API
+description: 'Collection for the FitSmart API, covering user management endpoints.'
+variables:
+  - key: baseUrl
+    value: 'http://localhost:8080'

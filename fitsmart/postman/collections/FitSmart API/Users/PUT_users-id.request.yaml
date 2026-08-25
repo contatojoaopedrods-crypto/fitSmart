@@ -1,0 +1,23 @@
+$kind: http-request
+name: 'PUT /users/{id}'
+method: PUT
+url: '{{baseUrl}}/users/:id'
+order: 4000
+pathVariables:
+  - key: id
+    value: '1'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+{ 
+    "nome": "João", 
+    "sobrenome": "Fernandes", 
+    "telefone": "11988888888", 
+    "sexo": "M",
+     "cep": "01310-100",
+     "logradouro": "Avenida Paulista",
+     "numero_residencial": "2000",
+     "complemento": "Sala 5" }
