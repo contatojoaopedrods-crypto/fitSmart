@@ -19,7 +19,8 @@ public class GlobalExceptionHandler {
 
         @ExceptionHandler({
                         EmailAlreadyExistsException.class,
-                        CrefAlreadyExistsException.class
+                        CrefAlreadyExistsException.class,
+                        SelfDeactivationException.class
         })
 
         public ResponseEntity<ApiErrorResponse> handleConflict(

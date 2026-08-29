@@ -18,8 +18,8 @@ import com.fitsmart.model.enums.UserRole;
 import com.fitsmart.repository.AlunoRepository;
 import com.fitsmart.repository.ProfessorRepository;
 import com.fitsmart.repository.UserRepository;
-
-import jakarta.transaction.Transactional;
+import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AlunoService {
@@ -93,11 +93,33 @@ public class AlunoService {
 
     }
 
-        private AlunoResponse convertToResponse(Aluno aluno) {
+    private AlunoResponse convertToResponse(Aluno aluno) {
         return new AlunoResponse(
                 aluno.getId(),
                 userService.convertToResponse(aluno.getUser()),
-                aluno.getProfessor().getId()
-        );
+                aluno.getProfessor().getId());
     }
+
+    @Transactional(readOnly = true)
+    public List<AlunoResponse> listAlunosByProfessor(Long professorUserId) {
+
+        return alunoRepository
+                .findAllByProfessor_User_Id(professorUserId)
+                .stream()
+                .map(this::convertToResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public AlunoResponse getAlunoByIdAndProfessor(
+            Long alunoId,
+            Long professorUserId) {
+
+        Aluno aluno = alunoRepository
+                .findByIdAndProfessor_User_Id(alunoId, professorUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Aluno não encontrado"));
+
+        return convertToResponse(aluno);
+    }
+
 }

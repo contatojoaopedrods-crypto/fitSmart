@@ -12,55 +12,77 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 public class SecurityConfig {
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http) throws Exception {
+        @Bean
+        public SecurityFilterChain securityFilterChain(
+                        HttpSecurity http) throws Exception {
 
-        http
-                .csrf(csrf -> csrf.disable())
+                http
+                                .csrf(csrf -> csrf.disable())
 
-                .sessionManagement(session -> session.sessionCreationPolicy(
-                        SessionCreationPolicy.STATELESS))
+                                .sessionManagement(session -> session.sessionCreationPolicy(
+                                                SessionCreationPolicy.STATELESS))
+                                .authorizeHttpRequests(authorize -> authorize
 
-                .authorizeHttpRequests(authorize -> authorize
+                                                .requestMatchers(
+                                                                HttpMethod.POST,
+                                                                "/auth/login"
+                                                )
+                                                .permitAll()
 
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/users",
-                                "/auth/login")
-                        .permitAll()
+                                                .requestMatchers(
+                                                                HttpMethod.POST,
+                                                                "/professors")
+                                                .permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/professors").permitAll()
+                                                .requestMatchers(
+                                                                HttpMethod.GET,
+                                                                "/professors/me",
+                                                                "/professors/me/students",
+                                                                "/professors/me/students/*")
+                                                .hasRole("PROFESSOR")
 
-                        .requestMatchers(HttpMethod.GET, "/professors/me")
-                        .hasRole("PROFESSOR")
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/professors/me/students")
-                        .hasRole("PROFESSOR")
+                                                .requestMatchers(
+                                                                HttpMethod.POST,
+                                                                "/professors/me/students")
+                                                .hasRole("PROFESSOR")
 
-                        .anyRequest().authenticated())
+                                                .requestMatchers(
+                                                                HttpMethod.GET,
+                                                                "/users/me")
+                                                .authenticated()
 
-                .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt
-                                .jwtAuthenticationConverter(jwtAuthenticationConverter())));
+                                                .requestMatchers(
+                                                                HttpMethod.GET,
+                                                                "/users",
+                                                                "/users/*")
+                                                .hasRole("ADMIN")
 
-        return http.build();
-    }
 
-    @Bean
-    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+                                                .requestMatchers("/admin/**")
+                                                .hasRole("ADMIN")
 
-        JwtGrantedAuthoritiesConverter authoritiesConverter = new JwtGrantedAuthoritiesConverter();
+                                                .anyRequest().authenticated())
+                                .oauth2ResourceServer(oauth2 -> oauth2
+                                                .jwt(jwt -> jwt
+                                                                .jwtAuthenticationConverter(
+                                                                                jwtAuthenticationConverter())));
 
-        authoritiesConverter.setAuthoritiesClaimName("role");
-        authoritiesConverter.setAuthorityPrefix("ROLE_");
+                return http.build();
+        }
 
-        JwtAuthenticationConverter authenticationConverter = new JwtAuthenticationConverter();
+        @Bean
+        public JwtAuthenticationConverter jwtAuthenticationConverter() {
 
-        authenticationConverter.setJwtGrantedAuthoritiesConverter(
-                authoritiesConverter);
+                JwtGrantedAuthoritiesConverter authoritiesConverter = new JwtGrantedAuthoritiesConverter();
 
-        return authenticationConverter;
-    }
+                authoritiesConverter.setAuthoritiesClaimName("role");
+                authoritiesConverter.setAuthorityPrefix("ROLE_");
+
+                JwtAuthenticationConverter authenticationConverter = new JwtAuthenticationConverter();
+
+                authenticationConverter.setJwtGrantedAuthoritiesConverter(
+                                authoritiesConverter);
+
+                return authenticationConverter;
+        }
 }

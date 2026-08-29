@@ -9,19 +9,19 @@ headers:
 body:
   type: json
   content: |-
-{
-    "nome": "João Pedro",
-    "sobrenome": "Fernandes",
-    "email": "joao@email.com",
-    "senha": "123456",
-    "telefone": "21999999999",
-    "data_nascimento": "2005-09-30",
-    "sexo": "M",
-    "tipo_usuario": "ALUNO",
-    "ativo": true,
-    "data_cadastro": "2026-08-23T12:30:00",
-    "cep": "20040020",
-    "logradouro": "Rua Exemplo",
-    "numero_residencial": "123",
-    "complemento": "Apto 101"
-}
+    {
+      "nome": "João Pedro",
+      "sobrenome": "Fernandes",
+      "email": "joao@email.com",
+      "senha": "123456",
+      "telefone": "21999999999",
+      "data_nascimento": "2005-09-30",
+      "sexo": "M",
+      "tipo_usuario": "ALUNO",
+      "ativo": true,
+      "data_cadastro": "2026-08-23T12:30:00",
+      "cep": "20040020",
+      "logradouro": "Rua Exemplo",
+      "numero_residencial": "123",
+      "complemento": "Apto 101"
+    }

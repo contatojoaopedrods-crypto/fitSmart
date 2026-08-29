@@ -1,18 +1,18 @@
 package com.fitsmart.service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.fitsmart.repository.UserRepository;
-import com.fitsmart.dto.CreateUserRequest;
 import com.fitsmart.dto.UserResponse;
 import com.fitsmart.exception.ResourceNotFoundException;
+import com.fitsmart.exception.SelfDeactivationException;
 import com.fitsmart.model.User;
-import com.fitsmart.model.enums.UserRole;
 import com.fitsmart.dto.UpdateUserRequest;
+import com.fitsmart.dto.UpdateUserStatusRequest;
+
 import java.util.Locale;
 import com.fitsmart.dto.UpdatePasswordRequest;
 import com.fitsmart.exception.InvalidPasswordException;
@@ -35,38 +35,7 @@ public class UserService {
 
     }
 
-    public UserResponse createUser(CreateUserRequest request) {
 
-        User user = new User();
-        String email = request.email()
-                .trim()
-                .toLowerCase(Locale.ROOT);
-
-        if (userRepository.existsByEmailIgnoreCase(email)) {
-            throw new EmailAlreadyExistsException(
-                    "Já existe um usuário cadastrado com este e-mail");
-        }
-
-        user.setNome(request.nome());
-        user.setSobrenome(request.sobrenome());
-        user.setEmail(request.email());
-        user.setSenha(passwordEncoder.encode(request.senha()));
-        user.setTelefone(request.telefone());
-        user.setData_nascimento(request.data_nascimento());
-        user.setSexo(request.sexo());
-        user.setCep(request.cep());
-        user.setLogradouro(request.logradouro());
-        user.setNumero_residencial(request.numero_residencial());
-        user.setComplemento(request.complemento());
-
-        user.setAtivo(true);
-        user.setTipo_usuario(UserRole.ALUNO);
-        user.setData_cadastro(LocalDateTime.now());
-
-        User newUser = userRepository.save(user);
-
-        return convertToResponse(newUser);
-    }
 
     private User findUserById(long id) {
         return userRepository.findById(id)
@@ -88,12 +57,6 @@ public class UserService {
 
     }
 
-    public void deleteUser(Long id) {
-
-        User user = findUserById(id);
-
-        userRepository.delete(user);
-    }
 
     public UserResponse updateUser(
             Long id,
@@ -230,6 +193,28 @@ public class UserService {
         }
 
         user.setEmail(newEmail);
+
+        User updatedUser = userRepository.save(user);
+
+        return convertToResponse(updatedUser);
+    }
+
+    @Transactional
+    public UserResponse updateUserStatus(
+            Long userId,
+            Long authenticatedAdminId,
+            UpdateUserStatusRequest request) {
+
+        if (userId.equals(authenticatedAdminId)
+               && Boolean.FALSE.equals(request.ativo())) {
+            
+            throw new SelfDeactivationException(
+                "O administrador não pode desativar a própria conta");            
+            }
+
+        User user = findUserById(userId);
+
+        user.setAtivo(request.ativo());
 
         User updatedUser = userRepository.save(user);
 
