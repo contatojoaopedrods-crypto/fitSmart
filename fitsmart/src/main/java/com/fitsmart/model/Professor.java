@@ -25,6 +25,7 @@ public class Professor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_professor")
     private Long id;
 
     @OneToOne(optional = false)

@@ -25,8 +25,7 @@ public class SecurityConfig {
 
                                                 .requestMatchers(
                                                                 HttpMethod.POST,
-                                                                "/auth/login"
-                                                )
+                                                                "/auth/login")
                                                 .permitAll()
 
                                                 .requestMatchers(
@@ -35,15 +34,8 @@ public class SecurityConfig {
                                                 .permitAll()
 
                                                 .requestMatchers(
-                                                                HttpMethod.GET,
                                                                 "/professors/me",
-                                                                "/professors/me/students",
-                                                                "/professors/me/students/*")
-                                                .hasRole("PROFESSOR")
-
-                                                .requestMatchers(
-                                                                HttpMethod.POST,
-                                                                "/professors/me/students")
+                                                                "/professors/me/**")
                                                 .hasRole("PROFESSOR")
 
                                                 .requestMatchers(
@@ -57,9 +49,13 @@ public class SecurityConfig {
                                                                 "/users/*")
                                                 .hasRole("ADMIN")
 
-
                                                 .requestMatchers("/admin/**")
                                                 .hasRole("ADMIN")
+
+                                                .requestMatchers(
+                                                                HttpMethod.GET,
+                                                                "/students/me/assessments")
+                                                .hasRole("ALUNO")
 
                                                 .anyRequest().authenticated())
                                 .oauth2ResourceServer(oauth2 -> oauth2

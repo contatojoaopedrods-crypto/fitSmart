@@ -1,5 +1,6 @@
 package com.fitsmart.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -20,10 +21,10 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Aluno {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+@Id
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+@Column(name = "id_aluno")
+private Long id;
     @OneToOne(optional = false)
     @JoinColumn(
     name = "id_usuario",

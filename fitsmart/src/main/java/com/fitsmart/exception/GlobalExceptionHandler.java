@@ -155,4 +155,23 @@ public class GlobalExceptionHandler {
                                 .status(HttpStatus.FORBIDDEN)
                                 .body(response);
         }
+
+        @ExceptionHandler(InvalidAvaliacaoFisicaException.class)
+        public ResponseEntity<ApiErrorResponse> handleInvalidAvaliacaoFisica(
+                        InvalidAvaliacaoFisicaException exception,
+                        HttpServletRequest request) {
+
+                ApiErrorResponse response = new ApiErrorResponse(
+                                LocalDateTime.now(),
+                                HttpStatus.BAD_REQUEST.value(),
+                                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                                exception.getMessage(),
+                                request.getRequestURI(),
+                                null);
+
+                return ResponseEntity
+                                .status(HttpStatus.BAD_REQUEST)
+                                .body(response);
+        }
+
 }
