@@ -66,7 +66,7 @@ public class Exercicio {
     public void setDescricao(String descricao) { this.descricao = descricao; }
 
     public String getDificuldade() { return dificuldade; }
-    public void setDificuldade(String dificuldade) { this.dificuldade = difficulty; }
+    public void setDificuldade(String dificuldade) { this.dificuldade = dificuldade; }
 
     public String getImpacto() { return impacto; }
     public void setImpacto(String impacto) { this.impacto = impacto; }

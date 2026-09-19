@@ -22,7 +22,12 @@ public class SecurityConfig {
                                 .sessionManagement(session -> session.sessionCreationPolicy(
                                                 SessionCreationPolicy.STATELESS))
                                 .authorizeHttpRequests(authorize -> authorize
+                                        .requestMatchers("/error").permitAll()
 
+                                        .requestMatchers(
+                HttpMethod.GET,
+                "/teste")
+        .permitAll()
                                                 .requestMatchers(
                                                                 HttpMethod.POST,
                                                                 "/auth/login")
