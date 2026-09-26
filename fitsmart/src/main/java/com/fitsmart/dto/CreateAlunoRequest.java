@@ -1,5 +1,7 @@
 package com.fitsmart.dto;
 
+import com.fitsmart.model.enums.NivelExperiencia;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -10,9 +12,11 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class CreateAlunoRequest {
-    
 
     @Valid
     @NotNull(message = "Os dados do usuário são obrigatórios")
     private CreateUserRequest user;
+
+    @NotNull(message = "O nível de experiência é obrigatório")
+    private NivelExperiencia nivelExperiencia;
 }

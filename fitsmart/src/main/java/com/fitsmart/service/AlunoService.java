@@ -1,10 +1,12 @@
 package com.fitsmart.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Locale;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fitsmart.dto.AlunoResponse;
 import com.fitsmart.dto.CreateAlunoRequest;
@@ -14,12 +16,11 @@ import com.fitsmart.exception.ResourceNotFoundException;
 import com.fitsmart.model.Aluno;
 import com.fitsmart.model.Professor;
 import com.fitsmart.model.User;
+import com.fitsmart.model.enums.NivelExperiencia;
 import com.fitsmart.model.enums.UserRole;
 import com.fitsmart.repository.AlunoRepository;
 import com.fitsmart.repository.ProfessorRepository;
 import com.fitsmart.repository.UserRepository;
-import java.util.List;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AlunoService {
@@ -44,6 +45,22 @@ public class AlunoService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    private Aluno findAlunoDoProfessor(
+            Long alunoId,
+            Long professorUserId) {
+
+        return alunoRepository
+                .findByIdAndProfessor_User_Id(
+                        alunoId,
+                        professorUserId
+                )
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Aluno não encontrado"
+                        )
+                );
+    }
+
     @Transactional
     public AlunoResponse createAluno(
             Long professorUserId,
@@ -51,8 +68,11 @@ public class AlunoService {
 
         Professor professor = professorRepository
                 .findByUser_Id(professorUserId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Professor não encontrado"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Professor não encontrado"
+                        )
+                );
 
         CreateUserRequest userRequest = request.getUser();
 
@@ -60,9 +80,12 @@ public class AlunoService {
                 .trim()
                 .toLowerCase(Locale.ROOT);
 
-        if (userRepository.existsByEmailIgnoreCase(emailNormalizado)) {
+        if (userRepository.existsByEmailIgnoreCase(
+                emailNormalizado)) {
+
             throw new EmailAlreadyExistsException(
-                    "Já existe um usuário cadastrado com este e-mail");
+                    "Já existe um usuário cadastrado com este e-mail"
+            );
         }
 
         User user = new User();
@@ -70,13 +93,19 @@ public class AlunoService {
         user.setNome(userRequest.nome());
         user.setSobrenome(userRequest.sobrenome());
         user.setEmail(emailNormalizado);
-        user.setSenha(passwordEncoder.encode(userRequest.senha()));
+        user.setSenha(
+                passwordEncoder.encode(userRequest.senha())
+        );
         user.setTelefone(userRequest.telefone());
-        user.setData_nascimento(userRequest.data_nascimento());
+        user.setData_nascimento(
+                userRequest.data_nascimento()
+        );
         user.setSexo(userRequest.sexo());
         user.setCep(userRequest.cep());
         user.setLogradouro(userRequest.logradouro());
-        user.setNumero_residencial(userRequest.numero_residencial());
+        user.setNumero_residencial(
+                userRequest.numero_residencial()
+        );
         user.setComplemento(userRequest.complemento());
 
         user.setTipo_usuario(UserRole.ALUNO);
@@ -85,26 +114,39 @@ public class AlunoService {
 
         User savedUser = userRepository.save(user);
 
-        Aluno aluno = new Aluno(savedUser, professor);
+        Aluno aluno = new Aluno(
+                savedUser,
+                professor,
+                request.getNivelExperiencia()
+        );
 
-        Aluno savedAluno = alunoRepository.save(aluno);
+        Aluno savedAluno =
+                alunoRepository.save(aluno);
 
         return convertToResponse(savedAluno);
-
     }
 
-    private AlunoResponse convertToResponse(Aluno aluno) {
+    private AlunoResponse convertToResponse(
+            Aluno aluno) {
+
         return new AlunoResponse(
                 aluno.getId(),
-                userService.convertToResponse(aluno.getUser()),
-                aluno.getProfessor().getId());
+                userService.convertToResponse(
+                        aluno.getUser()
+                ),
+                aluno.getProfessor().getId(),
+                aluno.getNivelExperiencia()
+        );
     }
 
     @Transactional(readOnly = true)
-    public List<AlunoResponse> listAlunosByProfessor(Long professorUserId) {
+    public List<AlunoResponse> listAlunosByProfessor(
+            Long professorUserId) {
 
         return alunoRepository
-                .findAllByProfessor_User_Id(professorUserId)
+                .findAllByProfessor_User_Id(
+                        professorUserId
+                )
                 .stream()
                 .map(this::convertToResponse)
                 .toList();
@@ -115,11 +157,30 @@ public class AlunoService {
             Long alunoId,
             Long professorUserId) {
 
-        Aluno aluno = alunoRepository
-                .findByIdAndProfessor_User_Id(alunoId, professorUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("Aluno não encontrado"));
-
-        return convertToResponse(aluno);
+        return convertToResponse(
+                findAlunoDoProfessor(
+                        alunoId,
+                        professorUserId
+                )
+        );
     }
 
+    @Transactional
+    public AlunoResponse updateNivelExperiencia(
+            Long alunoId,
+            Long professorUserId,
+            NivelExperiencia nivelExperiencia) {
+
+        Aluno aluno = findAlunoDoProfessor(
+                alunoId,
+                professorUserId
+        );
+
+        aluno.setNivelExperiencia(nivelExperiencia);
+
+        Aluno alunoAtualizado =
+                alunoRepository.save(aluno);
+
+        return convertToResponse(alunoAtualizado);
+    }
 }
