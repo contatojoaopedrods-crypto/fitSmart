@@ -19,4 +19,6 @@ public interface AlunoRepository extends JpaRepository<Aluno, Long> {
         Long alunoId,
         Long professorUserId
     );
+
+    
 }

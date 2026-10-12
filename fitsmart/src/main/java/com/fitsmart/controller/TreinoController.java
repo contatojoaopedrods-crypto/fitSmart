@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,56 +29,59 @@ public class TreinoController {
         this.treinoService = treinoService;
     }
 
-    /**
-     * Método auxiliar para obter o ID de usuário do professor autenticado.
-     * Na integração com Spring Security/JWT, este valor será extraído do SecurityContext.
-     */
-    private Long obterProfessorUserId() {
-        return 1L; // ID fixo para ambiente de dev/teste local
-    }
-
     // POST /professors/me/students/{studentId}/workouts
     @PostMapping
     public ResponseEntity<TreinoResponseDTO> criarRascunho(
+            @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long studentId,
             @RequestBody CriarTreinoDTO dto) {
-        Long professorUserId = obterProfessorUserId();
+        
+        Long professorUserId = Long.valueOf(jwt.getClaim("user_id").toString());
         TreinoResponseDTO response = treinoService.criarRascunho(professorUserId, studentId, dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     // GET /professors/me/students/{studentId}/workouts
     @GetMapping
-    public ResponseEntity<List<TreinoResponseDTO>> listarTreinosDoAluno(@PathVariable Long studentId) {
-        Long professorUserId = obterProfessorUserId();
+    public ResponseEntity<List<TreinoResponseDTO>> listarTreinosDoAluno(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable Long studentId) {
+        
+        Long professorUserId = Long.valueOf(jwt.getClaim("user_id").toString());
         return ResponseEntity.ok(treinoService.listarTreinosDoAluno(professorUserId, studentId));
     }
 
     // GET /professors/me/students/{studentId}/workouts/{workoutId}
     @GetMapping("/{workoutId}")
     public ResponseEntity<TreinoResponseDTO> buscarTreinoPorId(
+            @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long studentId,
             @PathVariable Long workoutId) {
-        Long professorUserId = obterProfessorUserId();
+        
+        Long professorUserId = Long.valueOf(jwt.getClaim("user_id").toString());
         return ResponseEntity.ok(treinoService.buscarTreinoPorId(professorUserId, studentId, workoutId));
     }
 
     // PUT /professors/me/students/{studentId}/workouts/{workoutId}
     @PutMapping("/{workoutId}")
     public ResponseEntity<TreinoResponseDTO> atualizarTreino(
+            @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long studentId,
             @PathVariable Long workoutId,
             @RequestBody AtualizarTreinoDTO dto) {
-        Long professorUserId = obterProfessorUserId();
+        
+        Long professorUserId = Long.valueOf(jwt.getClaim("user_id").toString());
         return ResponseEntity.ok(treinoService.atualizarTreino(professorUserId, studentId, workoutId, dto));
     }
 
     // POST /professors/me/students/{studentId}/workouts/{workoutId}/publish
     @PostMapping("/{workoutId}/publish")
     public ResponseEntity<TreinoResponseDTO> publicarTreino(
+            @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long studentId,
             @PathVariable Long workoutId) {
-        Long professorUserId = obterProfessorUserId();
+        
+        Long professorUserId = Long.valueOf(jwt.getClaim("user_id").toString());
         return ResponseEntity.ok(treinoService.publicarTreino(professorUserId, studentId, workoutId));
     }
 }

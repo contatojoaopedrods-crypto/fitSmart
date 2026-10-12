@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -13,11 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-
 import com.fitsmart.model.enums.UserRole;
-
 
 @Getter
 @Setter
@@ -26,9 +24,9 @@ import com.fitsmart.model.enums.UserRole;
 @Table(name = "usuario")
 public class User {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_usuario") // <--- CORREÇÃO: Mapeia para a PK real no PostgreSQL
     private Long id;
 
     private String nome;
@@ -48,9 +46,8 @@ public class User {
     private String cep;
     private String logradouro;
 
-    @Column(name="numero")
+    @Column(name = "numero")
     private String numero_residencial;
 
     private String complemento;
-   
 }

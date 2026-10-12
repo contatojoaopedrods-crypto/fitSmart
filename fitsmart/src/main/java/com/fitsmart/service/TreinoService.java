@@ -109,7 +109,7 @@ public class TreinoService {
         Treino treino = treinoRepository.findByIdAndAluno_IdAndProfessor_User_Id(treinoId, alunoId, professorUserId)
                 .orElseThrow(() -> new RuntimeException("Treino não encontrado"));
 
-        treino.setStatus(StatusTreino.PUBLICADO);
+        treino.setStatus(StatusTreino.ATIVO);
         treino.setDataPublicacao(LocalDateTime.now());
 
         Treino treinoPublicado = treinoRepository.save(treino);

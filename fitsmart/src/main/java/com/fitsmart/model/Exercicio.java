@@ -3,6 +3,7 @@ package com.fitsmart.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -13,11 +14,12 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "exercicios")
+@Table(name = "exercicio")
 public class Exercicio {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_exercicio") // Mapeia para a chave primária real do PostgreSQL
     private Long id;
 
     private String nome;
@@ -30,8 +32,8 @@ public class Exercicio {
     @ManyToMany
     @JoinTable(
         name = "exercicio_acao_articular",
-        joinColumns = @JoinColumn(name = "exercicio_id"),
-        inverseJoinColumns = @JoinColumn(name = "acao_articular_id")
+        joinColumns = @JoinColumn(name = "id_exercicio"),
+        inverseJoinColumns = @JoinColumn(name = "id_acao_articular")
     )
     private List<AcaoArticular> acoesArticulares = new ArrayList<>();
 
@@ -39,7 +41,7 @@ public class Exercicio {
     @ManyToMany
     @JoinTable(
         name = "exercicio_limitacao_biomecanica",
-        joinColumns = @JoinColumn(name = "exercicio_id"),
+        joinColumns = @JoinColumn(name = "id_exercicio"),
         inverseJoinColumns = @JoinColumn(name = "limitacao_id")
     )
     private List<LimitacaoBiomecanica> restricoesLimitacoes = new ArrayList<>();
@@ -48,8 +50,8 @@ public class Exercicio {
     @ManyToMany
     @JoinTable(
         name = "exercicio_lesao",
-        joinColumns = @JoinColumn(name = "exercicio_id"),
-        inverseJoinColumns = @JoinColumn(name = "lesao_id")
+        joinColumns = @JoinColumn(name = "id_exercicio"),
+        inverseJoinColumns = @JoinColumn(name = "id_lesao")
     )
     private List<Lesao> restricoesLesoes = new ArrayList<>();
 

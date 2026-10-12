@@ -1,5 +1,6 @@
 package com.fitsmart.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -14,21 +15,25 @@ public class ItemTreino {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_item_treino")
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "treino_id", nullable = false)
+    @JoinColumn(name = "id_treino", nullable = false) // Chave estrangeira para Treino
     private Treino treino;
 
     @ManyToOne
-    @JoinColumn(name = "exercicio_id", nullable = false)
+    @JoinColumn(name = "id_exercicio", nullable = false) // Chave estrangeira para Exercicio
     private Exercicio exercicio;
 
     private Integer ordem;
     private Integer series;
     private Integer repeticoes;
-    private Double carga;        // em kg
-    private Integer tempoSegundos; // tempo em segundos (ex: descanso ou execução isometrica)
+    private Double carga;
+
+    @Column(name = "tempo_segundos")
+    private Integer tempoSegundos;
+
     private String observacoes;
 
     public ItemTreino() {}

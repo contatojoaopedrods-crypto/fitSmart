@@ -18,6 +18,7 @@ import com.fitsmart.dto.ProfessorResponse;
 import com.fitsmart.service.AlunoService;
 import com.fitsmart.service.ProfessorService;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.validation.Valid;
 
@@ -73,6 +74,23 @@ public class ProfessorController {
                 return ResponseEntity
                                 .status(HttpStatus.CREATED)
                                 .body(response);
+        }
+
+        @PostMapping("/me/students/link")
+        public ResponseEntity<AlunoResponse> linkStudent(
+                        @AuthenticationPrincipal Jwt jwt,
+                        @RequestBody Map<String, String> request) {
+
+                Long professorUserId = Long.valueOf(
+                                jwt.getClaim("user_id").toString());
+
+                String email = request.get("email");
+
+                AlunoResponse response = alunoService.linkAlunoByEmail(
+                                professorUserId,
+                                email);
+
+                return ResponseEntity.ok(response);
         }
 
         @GetMapping("/me/students")

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -22,21 +23,26 @@ public class Treino {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_treino") // Mapeia para a chave primária real do PostgreSQL
     private Long id;
 
     @Enumerated(EnumType.STRING)
     private StatusTreino status = StatusTreino.RASCUNHO;
 
+    @Column(name = "data_criacao")
     private LocalDateTime dataCriacao = LocalDateTime.now();
+
+    @Column(name = "data_publicacao")
     private LocalDateTime dataPublicacao;
+
     private String observacoes;
 
     @ManyToOne
-    @JoinColumn(name = "aluno_id", nullable = false)
+    @JoinColumn(name = "id_aluno", nullable = false) // Alinhado com a tabela aluno
     private Aluno aluno;
 
     @ManyToOne
-    @JoinColumn(name = "professor_id", nullable = false)
+    @JoinColumn(name = "id_professor", nullable = false) // Alinhado com a tabela professor
     private Professor professor;
 
     @OneToMany(mappedBy = "treino", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -44,7 +50,6 @@ public class Treino {
 
     public Treino() {}
 
-    // Helper para adicionar itens mantendo a referência bidirecional
     public void adicionarItem(ItemTreino item) {
         itens.add(item);
         item.setTreino(this);

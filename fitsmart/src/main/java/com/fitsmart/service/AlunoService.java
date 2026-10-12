@@ -1,10 +1,12 @@
 package com.fitsmart.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Locale;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fitsmart.dto.AlunoResponse;
 import com.fitsmart.dto.CreateAlunoRequest;
@@ -18,8 +20,6 @@ import com.fitsmart.model.enums.UserRole;
 import com.fitsmart.repository.AlunoRepository;
 import com.fitsmart.repository.ProfessorRepository;
 import com.fitsmart.repository.UserRepository;
-import java.util.List;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AlunoService {
@@ -91,6 +91,29 @@ public class AlunoService {
 
         return convertToResponse(savedAluno);
 
+    }
+
+    @Transactional
+    public AlunoResponse linkAlunoByEmail(Long professorUserId, String email) {
+        Professor professor = professorRepository
+                .findByUser_Id(professorUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Professor não encontrado"));
+
+        String emailNormalizado = email.trim().toLowerCase(Locale.ROOT);
+
+        User user = userRepository
+                .findByEmail(emailNormalizado)
+                .orElseThrow(() -> new ResourceNotFoundException("Nenhum usuário encontrado com o e-mail: " + email));
+
+        Aluno aluno = alunoRepository
+                .findByUser_Id(user.getId())
+                .orElseGet(() -> new Aluno(user, professor));
+
+        aluno.setProfessor(professor);
+
+        Aluno savedAluno = alunoRepository.save(aluno);
+
+        return convertToResponse(savedAluno);
     }
 
     private AlunoResponse convertToResponse(Aluno aluno) {

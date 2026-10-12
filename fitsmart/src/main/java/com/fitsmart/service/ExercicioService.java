@@ -10,6 +10,10 @@ import com.fitsmart.dto.ExercicioResponseDTO;
 import com.fitsmart.model.Exercicio;
 import com.fitsmart.repository.ExercicioRepository;
 
+import com.fitsmart.model.AcaoArticular;
+import com.fitsmart.model.Lesao;
+import com.fitsmart.model.LimitacaoBiomecanica;
+
 @Service
 public class ExercicioService {
 
@@ -34,32 +38,35 @@ public class ExercicioService {
     }
 
     private ExercicioResponseDTO converterParaDTO(Exercicio exercicio) {
-        ExercicioResponseDTO dto = new ExercicioResponseDTO();
-        dto.setId(exercicio.getId());
-        dto.setNome(exercicio.getNome());
-        dto.setDescricao(exercicio.getDescricao());
-        dto.setDificuldade(exercicio.getDificuldade());
-        dto.setImpacto(exercicio.getImpacto());
-        dto.setObjetivo(exercicio.getObjetivo());
+    ExercicioResponseDTO dto = new ExercicioResponseDTO();
+    dto.setId(exercicio.getId());
+    dto.setNome(exercicio.getNome());
+    dto.setDescricao(exercicio.getDescricao());
+    dto.setDificuldade(exercicio.getDificuldade());
+    dto.setImpacto(exercicio.getImpacto());
+    dto.setObjetivo(exercicio.getObjetivo());
 
-        dto.setAcoesArticulares(
-            exercicio.getAcoesArticulares().stream()
-                .map(acao -> acao.toString())
-                .collect(Collectors.toList())
-        );
+    // Ações Articulares
+    dto.setAcoesArticulares(
+        exercicio.getAcoesArticulares().stream()
+            .map(AcaoArticular::getNome)
+            .collect(Collectors.toList())
+    );
 
-        dto.setRestricoesLimitacoes(
-            exercicio.getRestricoesLimitacoes().stream()
-                .map(lim -> lim.toString())
-                .collect(Collectors.toList())
-        );
+    // Limitações Biomecânicas (Usa o Enum tipoLimitacao em vez de getNome)
+    dto.setRestricoesLimitacoes(
+        exercicio.getRestricoesLimitacoes().stream()
+            .map(lim -> lim.getTipoLimitacao().name())
+            .collect(Collectors.toList())
+    );
 
-        dto.setRestricoesLesoes(
-            exercicio.getRestricoesLesoes().stream()
-                .map(lesao -> lesao.toString())
-                .collect(Collectors.toList())
-        );
+    // Lesões
+    dto.setRestricoesLesoes(
+        exercicio.getRestricoesLesoes().stream()
+           .map(Lesao::getNomeLesao)// Altere para lesao.getNomeLesao() se o método da classe Lesao for getNomeLesao
+            .collect(Collectors.toList())
+    );
 
-        return dto;
-    }
+    return dto;
+}
 }

@@ -2,6 +2,7 @@ package com.fitsmart.model;
 
 import com.fitsmart.model.enums.StatusCref;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -28,7 +29,8 @@ public class Professor {
     @Column(name = "id_professor")
     private Long id;
 
-    @OneToOne(optional = false)
+    // CORREÇÃO: Adicionado cascade = CascadeType.ALL
+    @OneToOne(optional = false, cascade = CascadeType.ALL)
     @JoinColumn(name = "id_usuario", nullable = false, unique = true)
     private User user;
 
@@ -44,5 +46,4 @@ public class Professor {
         this.cref = cref;
         this.statusCref = statusCref;
     }
-
 }
