@@ -11,6 +11,7 @@ import com.fitsmart.model.enums.GrupoMuscular;
 import com.fitsmart.model.enums.Impacto;
 import com.fitsmart.model.enums.NivelAtivacao;
 import com.fitsmart.model.enums.NivelExperiencia;
+import com.fitsmart.model.enums.Objetivo;
 import com.fitsmart.model.enums.PlanoMovimento;
 import com.fitsmart.model.enums.PressaoAbdominal;
 import com.fitsmart.model.enums.TipoEquipamento;
@@ -40,7 +41,8 @@ public record ExercicioResponse(
         boolean ativo,
         List<EquipamentoVinculadoResponse> equipamentos,
         List<GrupoMuscularVinculadoResponse> gruposMusculares,
-        List<AcaoArticularVinculadaResponse> acoesArticulares
+        List<AcaoArticularVinculadaResponse> acoesArticulares,
+        List<Objetivo> objetivos
 
 ) {
 

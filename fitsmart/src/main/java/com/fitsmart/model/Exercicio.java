@@ -24,14 +24,15 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Table(name = "exercicio")
-@Getter 
-@Setter 
+@Getter
+@Setter
 @NoArgsConstructor
 public class Exercicio {
 
@@ -40,16 +41,10 @@ public class Exercicio {
     @Column(name = "id_exercicio")
     private Long id;
 
-    @Column(
-        name = "nome",
-        nullable = false
-    )
+    @Column(name = "nome", nullable = false)
     private String nome;
 
-    @Column(
-        name = "descricao",
-        columnDefinition = "TEXT"
-    )
+    @Column(name = "descricao", columnDefinition = "TEXT")
     private String descricao;
 
     @Column(name = "caminho_imagem")
@@ -193,10 +188,7 @@ public class Exercicio {
     )
     private Impacto impactoTornozelo;
 
-    @Column(
-        name = "ativo",
-        nullable = false
-    )
+    @Column(name = "ativo", nullable = false)
     private boolean ativo = true;
 
     @OneToMany(
@@ -223,6 +215,14 @@ public class Exercicio {
     private List<ExercicioAcaoArticular> acoesArticulares =
             new ArrayList<>();
 
+    @OneToMany(
+        mappedBy = "exercicio",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )
+    private List<ExercicioObjetivo> objetivos =
+            new ArrayList<>();
+
     public void addEquipamento(
             ExercicioEquipamento equipamento) {
 
@@ -244,10 +244,18 @@ public class Exercicio {
         acaoArticular.setExercicio(this);
     }
 
+    public void addObjetivo(
+            ExercicioObjetivo objetivo) {
+
+        objetivos.add(objetivo);
+        objetivo.setExercicio(this);
+    }
+
     public void limparRelacionamentos() {
 
         equipamentos.clear();
         gruposMusculares.clear();
         acoesArticulares.clear();
+        objetivos.clear();
     }
 }

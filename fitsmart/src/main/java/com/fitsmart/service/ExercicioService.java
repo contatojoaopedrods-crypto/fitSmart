@@ -21,7 +21,9 @@ import com.fitsmart.model.Exercicio;
 import com.fitsmart.model.ExercicioAcaoArticular;
 import com.fitsmart.model.ExercicioEquipamento;
 import com.fitsmart.model.ExercicioGrupoMuscular;
+import com.fitsmart.model.ExercicioObjetivo;
 import com.fitsmart.model.enums.GrupoMuscular;
+import com.fitsmart.model.enums.Objetivo;
 import com.fitsmart.repository.AcaoArticularRepository;
 import com.fitsmart.repository.EquipamentoRepository;
 import com.fitsmart.repository.ExercicioRepository;
@@ -97,48 +99,22 @@ public class ExercicioService {
         exercicio.setDescricao(request.descricao());
         exercicio.setCaminhoImagem(request.caminhoImagem());
         exercicio.setUrlVideo(request.urlVideo());
-        exercicio.setPlanoMovimento(
-                request.planoMovimento()
-        );
+        exercicio.setPlanoMovimento(request.planoMovimento());
         exercicio.setCargaAxial(request.cargaAxial());
-        exercicio.setPressaoAbdominal(
-                request.pressaoAbdominal()
-        );
-        exercicio.setEstabilidadeExigida(
-                request.estabilidadeExigida()
-        );
-        exercicio.setNivelExperiencia(
-                request.nivelExperiencia()
-        );
+        exercicio.setPressaoAbdominal(request.pressaoAbdominal());
+        exercicio.setEstabilidadeExigida(request.estabilidadeExigida());
+        exercicio.setNivelExperiencia(request.nivelExperiencia());
         exercicio.setDificuldade(request.dificuldade());
 
-        exercicio.setImpactoCervical(
-                request.impactoCervical()
-        );
-        exercicio.setImpactoOmbro(
-                request.impactoOmbro()
-        );
-        exercicio.setImpactoCotovelo(
-                request.impactoCotovelo()
-        );
-        exercicio.setImpactoPunho(
-                request.impactoPunho()
-        );
-        exercicio.setImpactoToracica(
-                request.impactoToracica()
-        );
-        exercicio.setImpactoLombar(
-                request.impactoLombar()
-        );
-        exercicio.setImpactoQuadril(
-                request.impactoQuadril()
-        );
-        exercicio.setImpactoJoelho(
-                request.impactoJoelho()
-        );
-        exercicio.setImpactoTornozelo(
-                request.impactoTornozelo()
-        );
+        exercicio.setImpactoCervical(request.impactoCervical());
+        exercicio.setImpactoOmbro(request.impactoOmbro());
+        exercicio.setImpactoCotovelo(request.impactoCotovelo());
+        exercicio.setImpactoPunho(request.impactoPunho());
+        exercicio.setImpactoToracica(request.impactoToracica());
+        exercicio.setImpactoLombar(request.impactoLombar());
+        exercicio.setImpactoQuadril(request.impactoQuadril());
+        exercicio.setImpactoJoelho(request.impactoJoelho());
+        exercicio.setImpactoTornozelo(request.impactoTornozelo());
     }
 
     private void adicionarEquipamentos(
@@ -157,9 +133,7 @@ public class ExercicioService {
             }
 
             Equipamento equipamento =
-                    findEquipamentoAtivo(
-                            item.equipamentoId()
-                    );
+                    findEquipamentoAtivo(item.equipamentoId());
 
             exercicio.addEquipamento(
                     new ExercicioEquipamento(equipamento)
@@ -171,15 +145,12 @@ public class ExercicioService {
             Exercicio exercicio,
             SalvarExercicioRequest request) {
 
-        Set<GrupoMuscular> gruposAdicionados =
-                new HashSet<>();
+        Set<GrupoMuscular> gruposAdicionados = new HashSet<>();
 
         for (SalvarExercicioRequest.GrupoMuscularItem item
                 : request.gruposMusculares()) {
 
-            if (!gruposAdicionados.add(
-                    item.grupoMuscular())) {
-
+            if (!gruposAdicionados.add(item.grupoMuscular())) {
                 throw badRequest(
                         "Um grupo muscular não pode ser repetido"
                 );
@@ -203,18 +174,14 @@ public class ExercicioService {
         for (SalvarExercicioRequest.AcaoArticularItem item
                 : request.acoesArticulares()) {
 
-            if (!idsAdicionados.add(
-                    item.acaoArticularId())) {
-
+            if (!idsAdicionados.add(item.acaoArticularId())) {
                 throw badRequest(
                         "Uma ação articular não pode ser repetida"
                 );
             }
 
             AcaoArticular acaoArticular =
-                    findAcaoArticular(
-                            item.acaoArticularId()
-                    );
+                    findAcaoArticular(item.acaoArticularId());
 
             exercicio.addAcaoArticular(
                     new ExercicioAcaoArticular(
@@ -225,9 +192,44 @@ public class ExercicioService {
         }
     }
 
+    private void validarObjetivos(
+            SalvarExercicioRequest request) {
+
+        if (request.objetivos() == null
+                || request.objetivos().isEmpty()) {
+
+            throw badRequest(
+                    "Informe ao menos um objetivo do exercício"
+            );
+        }
+
+        Set<Objetivo> objetivos = new HashSet<>();
+
+        for (Objetivo objetivo : request.objetivos()) {
+
+            if (objetivo == null) {
+                throw badRequest(
+                        "O objetivo não pode ser nulo"
+                );
+            }
+
+            if (!objetivos.add(objetivo)) {
+                throw badRequest(
+                        "Um objetivo não pode ser repetido"
+                );
+            }
+        }
+    }
+
     private void adicionarRelacionamentos(
             Exercicio exercicio,
             SalvarExercicioRequest request) {
+
+        request.objetivos().forEach(objetivo ->
+                exercicio.addObjetivo(
+                        new ExercicioObjetivo(objetivo)
+                )
+        );
 
         adicionarEquipamentos(exercicio, request);
         adicionarGruposMusculares(exercicio, request);
@@ -246,9 +248,8 @@ public class ExercicioService {
     private ExercicioResponse convertToResponse(
             Exercicio exercicio) {
 
-        List<EquipamentoVinculadoResponse>
-                equipamentos = exercicio
-                        .getEquipamentos()
+        List<EquipamentoVinculadoResponse> equipamentos =
+                exercicio.getEquipamentos()
                         .stream()
                         .map(vinculo ->
                                 new EquipamentoVinculadoResponse(
@@ -260,9 +261,8 @@ public class ExercicioService {
                         )
                         .toList();
 
-        List<GrupoMuscularVinculadoResponse>
-                gruposMusculares = exercicio
-                        .getGruposMusculares()
+        List<GrupoMuscularVinculadoResponse> gruposMusculares =
+                exercicio.getGruposMusculares()
                         .stream()
                         .map(vinculo ->
                                 new GrupoMuscularVinculadoResponse(
@@ -273,11 +273,11 @@ public class ExercicioService {
                         )
                         .toList();
 
-        List<AcaoArticularVinculadaResponse>
-                acoesArticulares = exercicio
-                        .getAcoesArticulares()
+        List<AcaoArticularVinculadaResponse> acoesArticulares =
+                exercicio.getAcoesArticulares()
                         .stream()
                         .map(vinculo -> {
+
                             AcaoArticular acao =
                                     vinculo.getAcaoArticular();
 
@@ -290,6 +290,13 @@ public class ExercicioService {
                                     vinculo.getAmplitudeMovimento()
                             );
                         })
+                        .toList();
+
+        List<Objetivo> objetivos =
+                exercicio.getObjetivos()
+                        .stream()
+                        .map(ExercicioObjetivo::getObjetivo)
+                        .sorted()
                         .toList();
 
         return new ExercicioResponse(
@@ -316,13 +323,16 @@ public class ExercicioService {
                 exercicio.isAtivo(),
                 equipamentos,
                 gruposMusculares,
-                acoesArticulares
+                acoesArticulares,
+                objetivos
         );
     }
 
     @Transactional
     public ExercicioResponse createExercicio(
             SalvarExercicioRequest request) {
+
+        validarObjetivos(request);
 
         Exercicio exercicio = new Exercicio();
 
@@ -341,6 +351,8 @@ public class ExercicioService {
     public ExercicioResponse updateExercicio(
             Long exercicioId,
             SalvarExercicioRequest request) {
+
+        validarObjetivos(request);
 
         Exercicio exercicio = findById(exercicioId);
 

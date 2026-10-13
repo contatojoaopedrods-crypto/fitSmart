@@ -10,11 +10,13 @@ import com.fitsmart.model.enums.GrupoMuscular;
 import com.fitsmart.model.enums.Impacto;
 import com.fitsmart.model.enums.NivelAtivacao;
 import com.fitsmart.model.enums.NivelExperiencia;
+import com.fitsmart.model.enums.Objetivo;
 import com.fitsmart.model.enums.PlanoMovimento;
 import com.fitsmart.model.enums.PressaoAbdominal;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 public record SalvarExercicioRequest(
@@ -80,7 +82,10 @@ public record SalvarExercicioRequest(
         List<@Valid GrupoMuscularItem> gruposMusculares,
 
         @NotNull(message = "A lista de ações articulares é obrigatória")
-        List<@Valid AcaoArticularItem> acoesArticulares
+        List<@Valid AcaoArticularItem> acoesArticulares,
+
+        @NotEmpty(message = "Informe ao menos um objetivo do exercício")
+        List<@NotNull(message = "O objetivo não pode ser nulo") Objetivo> objetivos
 
 ) {
 
