@@ -1,0 +1,24 @@
+[
+  {
+    "id": 101,
+    "titulo": "Treino A - Peito e Tríceps",
+    "status": "PUBLICADO",
+    "professor": "João Pedro",
+    "exercicios": [
+      {
+        "nome": "Supino Reto",
+        "series": 4,
+        "repeticoes": 12,
+        "descansoSegundos": 60,
+        "observacao": "Manter escápulas fechadas"
+      },
+      {
+        "nome": "Tríceps Pulley",
+        "series": 3,
+        "repeticoes": 15,
+        "descansoSegundos": 45,
+        "observacao": "Controlar a volta do movimento"
+      }
+    ]
+  }
+]
