@@ -6,6 +6,7 @@ import com.fitsmart.model.WorkoutSession;
 import com.fitsmart.service.WorkoutSessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,41 +16,50 @@ public class StudentWorkoutController {
     @Autowired
     private WorkoutSessionService sessionService;
 
-    // 1. Listar treinos do aluno (placeholder)
+    
+    private Long getAuthenticatedStudentId(Authentication authentication) {
+        // Exemplo pegando o ID a partir do principal/username ou casting do usuario logado
+        // Caso o seu projeto use um User customizado: ((User) authentication.getPrincipal()).getId()
+        return Long.parseLong(authentication.getName()); 
+    }
+
+    
     @GetMapping("/workouts")
     public ResponseEntity<?> getMyWorkouts() {
         return ResponseEntity.ok("Lista de treinos do aluno");
     }
 
-    // 2. Ver detalhes do treino (placeholder)
+    
     @GetMapping("/workouts/{id}")
     public ResponseEntity<?> getWorkoutById(@PathVariable Long id) {
         return ResponseEntity.ok("Detalhes do treino ID: " + id);
     }
 
-    // 3. Iniciar sessão de treino
+    
     @PostMapping("/workouts/{id}/sessions")
-    public ResponseEntity<WorkoutSession> startSession(@PathVariable Long id) {
-        // Exemplo fixo com aluno ID 1 para testes
-        WorkoutSession session = sessionService.startSession(id, 1L);
+    public ResponseEntity<WorkoutSession> startSession(
+            @PathVariable Long id,
+            Authentication authentication) {
+        Long studentId = getAuthenticatedStudentId(authentication);
+        WorkoutSession session = sessionService.startSession(id, studentId);
         return ResponseEntity.ok(session);
     }
 
-    // 4. Finalizar sessão
+    
     @PatchMapping("/sessions/{sessionId}/finish")
     public ResponseEntity<WorkoutSession> finishSession(@PathVariable Long sessionId) {
         WorkoutSession session = sessionService.finishSession(sessionId);
         return ResponseEntity.ok(session);
     }
 
-    // 5. Interromper sessão
+    
     @PatchMapping("/sessions/{sessionId}/interrupt")
     public ResponseEntity<WorkoutSession> interruptSession(@PathVariable Long sessionId) {
         WorkoutSession session = sessionService.interruptSession(sessionId);
         return ResponseEntity.ok(session);
     }
 
-    // 6. Enviar Feedback
+    
     @PostMapping("/sessions/{sessionId}/feedback")
     public ResponseEntity<WorkoutFeedback> sendFeedback(
             @PathVariable Long sessionId,
