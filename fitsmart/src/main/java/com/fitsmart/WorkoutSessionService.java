@@ -19,34 +19,42 @@ public class WorkoutSessionService {
     @Autowired
     private WorkoutFeedbackRepository feedbackRepository;
 
-    // 1. Iniciar sessão
+    
+    private WorkoutSession validateSessionOwner(Long sessionId, Long studentId) {
+        WorkoutSession session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new RuntimeException("Sessão não encontrada com o ID: " + sessionId));
+
+        if (!session.getStudentId().equals(studentId)) {
+            throw new RuntimeException("Acesso negado: Esta sessão não pertence ao aluno autenticado.");
+        }
+        return session;
+    }
+
+    
     public WorkoutSession startSession(Long workoutId, Long studentId) {
         WorkoutSession session = new WorkoutSession(workoutId, studentId, "EM_ANDAMENTO", LocalDateTime.now());
         return sessionRepository.save(session);
     }
 
-    // 2. Finalizar sessão
-    public WorkoutSession finishSession(Long sessionId) {
-        WorkoutSession session = sessionRepository.findById(sessionId)
-                .orElseThrow(() -> new RuntimeException("Sessão não encontrada com o ID: " + sessionId));
-        
+    
+    public WorkoutSession finishSession(Long sessionId, Long studentId) {
+        WorkoutSession session = validateSessionOwner(sessionId, studentId);
         session.setStatus("CONCLUIDO");
         session.setEndTime(LocalDateTime.now());
         return sessionRepository.save(session);
     }
 
-    // 3. Interromper sessão
-    public WorkoutSession interruptSession(Long sessionId) {
-        WorkoutSession session = sessionRepository.findById(sessionId)
-                .orElseThrow(() -> new RuntimeException("Sessão não encontrada com o ID: " + sessionId));
-        
+    
+    public WorkoutSession interruptSession(Long sessionId, Long studentId) {
+        WorkoutSession session = validateSessionOwner(sessionId, studentId);
         session.setStatus("INTERROMPIDO");
         session.setEndTime(LocalDateTime.now());
         return sessionRepository.save(session);
     }
 
-    // 4. Salvar Feedback
-    public WorkoutFeedback saveFeedback(Long sessionId, FeedbackRequestDTO dto) {
+    
+    public WorkoutFeedback saveFeedback(Long sessionId, Long studentId, FeedbackRequestDTO dto) {
+        validateSessionOwner(sessionId, studentId);
         WorkoutFeedback feedback = new WorkoutFeedback(
                 sessionId,
                 dto.getNivelDor(),
@@ -55,4 +63,4 @@ public class WorkoutSessionService {
         );
         return feedbackRepository.save(feedback);
     }
-}   
+}
