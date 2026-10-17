@@ -13,13 +13,20 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @Entity
 @Table(name = "exercicio")
+@Getter
+@Setter
+@NoArgsConstructor
 public class Exercicio {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_exercicio") // Mapeia para a chave primária real do PostgreSQL
+    @Column(name = "id_exercicio")
     private Long id;
 
     private String nome;
@@ -54,34 +61,4 @@ public class Exercicio {
         inverseJoinColumns = @JoinColumn(name = "id_lesao")
     )
     private List<Lesao> restricoesLesoes = new ArrayList<>();
-
-    public Exercicio() {}
-
-    // Getters e Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getNome() { return nome; }
-    public void setNome(String nome) { this.nome = nome; }
-
-    public String getDescricao() { return descricao; }
-    public void setDescricao(String descricao) { this.descricao = descricao; }
-
-    public String getDificuldade() { return dificuldade; }
-    public void setDificuldade(String dificuldade) { this.dificuldade = dificuldade; }
-
-    public String getImpacto() { return impacto; }
-    public void setImpacto(String impacto) { this.impacto = impacto; }
-
-    public String getObjetivo() { return objetivo; }
-    public void setObjetivo(String objetivo) { this.objetivo = objetivo; }
-
-    public List<AcaoArticular> getAcoesArticulares() { return acoesArticulares; }
-    public void setAcoesArticulares(List<AcaoArticular> acoesArticulares) { this.acoesArticulares = acoesArticulares; }
-
-    public List<LimitacaoBiomecanica> getRestricoesLimitacoes() { return restricoesLimitacoes; }
-    public void setRestricoesLimitacoes(List<LimitacaoBiomecanica> restricoesLimitacoes) { this.restricoesLimitacoes = restricoesLimitacoes; }
-
-    public List<Lesao> getRestricoesLesoes() { return restricoesLesoes; }
-    public void setRestricoesLesoes(List<Lesao> restricoesLesoes) { this.restricoesLesoes = restricoesLesoes; }
 }

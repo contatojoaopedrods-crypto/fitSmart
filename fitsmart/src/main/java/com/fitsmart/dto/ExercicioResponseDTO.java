@@ -1,5 +1,6 @@
 package com.fitsmart.dto;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ExercicioResponseDTO {
@@ -10,9 +11,11 @@ public class ExercicioResponseDTO {
     private String dificuldade;
     private String impacto;
     private String objetivo;
-    private List<String> acoesArticulares;
-    private List<String> restricoesLimitacoes;
-    private List<String> restricoesLesoes;
+
+    // Listas para os dados biomecânicos e restrições
+    private List<String> acoesArticulares = new ArrayList<>();
+    private List<String> restricoesLimitacoes = new ArrayList<>();
+    private List<String> restricoesLesoes = new ArrayList<>();
 
     public ExercicioResponseDTO() {}
 
