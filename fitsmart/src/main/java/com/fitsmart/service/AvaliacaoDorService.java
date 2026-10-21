@@ -20,18 +20,34 @@ import com.fitsmart.repository.AvaliacaoFisicaRepository;
 @Service
 public class AvaliacaoDorService {
 
-    private final AvaliacaoDorRepository avaliacaoDorRepository;
-    private final AvaliacaoFisicaRepository avaliacaoFisicaRepository;
-    private final AcaoArticularRepository acaoArticularRepository;
+    private final AvaliacaoDorRepository
+            avaliacaoDorRepository;
+
+    private final AvaliacaoFisicaRepository
+            avaliacaoFisicaRepository;
+
+    private final AcaoArticularRepository
+            acaoArticularRepository;
+
+    private final StatusAvaliacaoComplementarService
+            statusService;
 
     public AvaliacaoDorService(
             AvaliacaoDorRepository avaliacaoDorRepository,
             AvaliacaoFisicaRepository avaliacaoFisicaRepository,
-            AcaoArticularRepository acaoArticularRepository) {
+            AcaoArticularRepository acaoArticularRepository,
+            StatusAvaliacaoComplementarService statusService) {
 
-        this.avaliacaoDorRepository = avaliacaoDorRepository;
-        this.avaliacaoFisicaRepository = avaliacaoFisicaRepository;
-        this.acaoArticularRepository = acaoArticularRepository;
+        this.avaliacaoDorRepository =
+                avaliacaoDorRepository;
+
+        this.avaliacaoFisicaRepository =
+                avaliacaoFisicaRepository;
+
+        this.acaoArticularRepository =
+                acaoArticularRepository;
+
+        this.statusService = statusService;
     }
 
     private AvaliacaoFisica findAvaliacaoDoProfessor(
@@ -52,7 +68,8 @@ public class AvaliacaoDorService {
                 );
     }
 
-    private AcaoArticular findAcaoArticular(Long acaoArticularId) {
+    private AcaoArticular findAcaoArticular(
+            Long acaoArticularId) {
 
         return acaoArticularRepository
                 .findById(acaoArticularId)
@@ -68,7 +85,9 @@ public class AvaliacaoDorService {
             CreateAvaliacaoDorRequest request) {
 
         AcaoArticular acaoArticular =
-                findAcaoArticular(request.acaoArticularId());
+                findAcaoArticular(
+                        request.acaoArticularId()
+                );
 
         return new AvaliacaoDor(
                 avaliacaoFisica,
@@ -99,10 +118,10 @@ public class AvaliacaoDorService {
             AvaliacaoFisica avaliacaoFisica,
             List<AvaliacaoDor> itens) {
 
-        List<AvaliacaoDorResponse> itensResponse = itens
-                .stream()
-                .map(this::convertToResponse)
-                .toList();
+        List<AvaliacaoDorResponse> itensResponse =
+                itens.stream()
+                        .map(this::convertToResponse)
+                        .toList();
 
         return new AvaliacaoDorCompletaResponse(
                 avaliacaoFisica.getId(),
@@ -126,20 +145,29 @@ public class AvaliacaoDorService {
                 );
 
         avaliacaoDorRepository
-                .deleteAllByAvaliacaoFisica_Id(avaliacaoId);
+                .deleteAllByAvaliacaoFisica_Id(
+                        avaliacaoId
+                );
 
         avaliacaoDorRepository.flush();
 
-        List<AvaliacaoDor> novosItens = request.itens()
-                .stream()
-                .map(item -> montarItem(
-                        avaliacaoFisica,
-                        item
-                ))
-                .toList();
+        List<AvaliacaoDor> novosItens =
+                request.itens()
+                        .stream()
+                        .map(item -> montarItem(
+                                avaliacaoFisica,
+                                item
+                        ))
+                        .toList();
 
         List<AvaliacaoDor> itensSalvos =
-                avaliacaoDorRepository.saveAll(novosItens);
+                avaliacaoDorRepository.saveAll(
+                        novosItens
+                );
+
+        statusService.marcarDorConcluida(
+                avaliacaoFisica
+        );
 
         return montarResponse(
                 avaliacaoFisica,

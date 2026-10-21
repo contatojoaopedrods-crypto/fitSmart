@@ -1,72 +1,270 @@
 package com.fitsmart.service;
 
+import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
-import com.fitsmart.dto.ExercicioResponseDTO;
-import com.fitsmart.model.Exercicio;
-import com.fitsmart.repository.ExercicioRepository;
-
+import com.fitsmart.dto.ExercicioResponse;
+import com.fitsmart.dto.ExercicioResponse.AcaoArticularVinculadaResponse;
+import com.fitsmart.dto.ExercicioResponse.EquipamentoVinculadoResponse;
+import com.fitsmart.dto.ExercicioResponse.GrupoMuscularVinculadoResponse;
+import com.fitsmart.dto.SalvarExercicioRequest;
+import com.fitsmart.exception.ResourceNotFoundException;
 import com.fitsmart.model.AcaoArticular;
-import com.fitsmart.model.Lesao;
-import com.fitsmart.model.LimitacaoBiomecanica;
+import com.fitsmart.model.Equipamento;
+import com.fitsmart.model.Exercicio;
+import com.fitsmart.model.ExercicioAcaoArticular;
+import com.fitsmart.model.ExercicioEquipamento;
+import com.fitsmart.model.ExercicioGrupoMuscular;
+import com.fitsmart.model.ExercicioObjetivo;
+import com.fitsmart.model.enums.GrupoMuscular;
+import com.fitsmart.model.enums.Objetivo;
+import com.fitsmart.repository.AcaoArticularRepository;
+import com.fitsmart.repository.EquipamentoRepository;
+import com.fitsmart.repository.ExercicioRepository;
 
 @Service
 public class ExercicioService {
 
     private final ExercicioRepository exercicioRepository;
+    private final EquipamentoRepository equipamentoRepository;
+    private final AcaoArticularRepository acaoArticularRepository;
 
-    public ExercicioService(ExercicioRepository exercicioRepository) {
+    public ExercicioService(
+            ExercicioRepository exercicioRepository,
+            EquipamentoRepository equipamentoRepository,
+            AcaoArticularRepository acaoArticularRepository) {
+
         this.exercicioRepository = exercicioRepository;
+        this.equipamentoRepository = equipamentoRepository;
+        this.acaoArticularRepository = acaoArticularRepository;
+    }
+
+    private Exercicio findById(Long exercicioId) {
+        return exercicioRepository
+                .findById(exercicioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Exercício não encontrado"));
+    }
+
+    private Exercicio findAtivoById(Long exercicioId) {
+        return exercicioRepository
+                .findByIdAndAtivoTrue(exercicioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Exercício não encontrado"));
+    }
+
+    private Equipamento findEquipamentoAtivo(Long equipamentoId) {
+        return equipamentoRepository
+                .findByIdAndAtivoTrue(equipamentoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Equipamento não encontrado"));
+    }
+
+    private AcaoArticular findAcaoArticular(Long acaoArticularId) {
+        return acaoArticularRepository
+                .findById(acaoArticularId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ação articular não encontrada"));
+    }
+
+    private void aplicarDadosPrincipais(Exercicio exercicio, SalvarExercicioRequest request) {
+        exercicio.setNome(request.nome().trim());
+        exercicio.setDescricao(request.descricao());
+        exercicio.setCaminhoImagem(request.caminhoImagem());
+        exercicio.setUrlVideo(request.urlVideo());
+        exercicio.setPlanoMovimento(request.planoMovimento());
+        exercicio.setCargaAxial(request.cargaAxial());
+        exercicio.setPressaoAbdominal(request.pressaoAbdominal());
+        exercicio.setEstabilidadeExigida(request.estabilidadeExigida());
+        exercicio.setNivelExperiencia(request.nivelExperiencia());
+        exercicio.setDificuldade(request.dificuldade());
+
+        exercicio.setImpactoCervical(request.impactoCervical());
+        exercicio.setImpactoOmbro(request.impactoOmbro());
+        exercicio.setImpactoCotovelo(request.impactoCotovelo());
+        exercicio.setImpactoPunho(request.impactoPunho());
+        exercicio.setImpactoToracica(request.impactoToracica());
+        exercicio.setImpactoLombar(request.impactoLombar());
+        exercicio.setImpactoQuadril(request.impactoQuadril());
+        exercicio.setImpactoJoelho(request.impactoJoelho());
+        exercicio.setImpactoTornozelo(request.impactoTornozelo());
+    }
+
+    private void adicionarEquipamentos(Exercicio exercicio, SalvarExercicioRequest request) {
+        Set<Long> idsAdicionados = new HashSet<>();
+        for (SalvarExercicioRequest.EquipamentoItem item : request.equipamentos()) {
+            if (!idsAdicionados.add(item.equipamentoId())) {
+                throw badRequest("Um equipamento não pode ser repetido");
+            }
+            Equipamento equipamento = findEquipamentoAtivo(item.equipamentoId());
+            exercicio.addEquipamento(new ExercicioEquipamento(equipamento));
+        }
+    }
+
+    private void adicionarGruposMusculares(Exercicio exercicio, SalvarExercicioRequest request) {
+        Set<GrupoMuscular> gruposAdicionados = new HashSet<>();
+        for (SalvarExercicioRequest.GrupoMuscularItem item : request.gruposMusculares()) {
+            if (!gruposAdicionados.add(item.grupoMuscular())) {
+                throw badRequest("Um grupo muscular não pode ser repetido");
+            }
+            exercicio.addGrupoMuscular(new ExercicioGrupoMuscular(item.grupoMuscular(), item.nivelAtivacao()));
+        }
+    }
+
+    private void adicionarAcoesArticulares(Exercicio exercicio, SalvarExercicioRequest request) {
+        Set<Long> idsAdicionados = new HashSet<>();
+        for (SalvarExercicioRequest.AcaoArticularItem item : request.acoesArticulares()) {
+            if (!idsAdicionados.add(item.acaoArticularId())) {
+                throw badRequest("Uma ação articular não pode ser repetida");
+            }
+            AcaoArticular acaoArticular = findAcaoArticular(item.acaoArticularId());
+            exercicio.addAcaoArticular(new ExercicioAcaoArticular(acaoArticular, item.amplitudeMovimento()));
+        }
+    }
+
+    private void validarObjetivos(SalvarExercicioRequest request) {
+        if (request.objetivos() == null || request.objetivos().isEmpty()) {
+            throw badRequest("Informe ao menos um objetivo do exercício");
+        }
+        Set<Objetivo> objetivos = new HashSet<>();
+        for (Objetivo objetivo : request.objetivos()) {
+            if (objetivo == null) {
+                throw badRequest("O objetivo não pode ser nulo");
+            }
+            if (!objetivos.add(objetivo)) {
+                throw badRequest("Um objetivo não pode ser repetido");
+            }
+        }
+    }
+
+    private void adicionarRelacionamentos(Exercicio exercicio, SalvarExercicioRequest request) {
+        request.objetivos().forEach(objetivo ->
+                exercicio.addObjetivo(new ExercicioObjetivo(objetivo))
+        );
+        adicionarEquipamentos(exercicio, request);
+        adicionarGruposMusculares(exercicio, request);
+        adicionarAcoesArticulares(exercicio, request);
+    }
+
+    private ResponseStatusException badRequest(String mensagem) {
+        return new ResponseStatusException(HttpStatus.BAD_REQUEST, mensagem);
+    }
+
+    private ExercicioResponse convertToResponse(Exercicio exercicio) {
+        List<EquipamentoVinculadoResponse> equipamentos = exercicio.getEquipamentos().stream()
+                .map(vinculo -> new EquipamentoVinculadoResponse(
+                        vinculo.getId(),
+                        vinculo.getEquipamento().getId(),
+                        vinculo.getEquipamento().getNome(),
+                        vinculo.getEquipamento().getTipo()
+                )).toList();
+
+        List<GrupoMuscularVinculadoResponse> gruposMusculares = exercicio.getGruposMusculares().stream()
+                .map(vinculo -> new GrupoMuscularVinculadoResponse(
+                        vinculo.getId(),
+                        vinculo.getGrupoMuscular(),
+                        vinculo.getNivelAtivacao()
+                )).toList();
+
+        List<AcaoArticularVinculadaResponse> acoesArticulares = exercicio.getAcoesArticulares().stream()
+                .map(vinculo -> {
+                    AcaoArticular acao = vinculo.getAcaoArticular();
+                    return new AcaoArticularVinculadaResponse(
+                            vinculo.getId(),
+                            acao.getId(),
+                            acao.getNome(),
+                            acao.getArticulacao(),
+                            acao.getPlanoMovimento(),
+                            vinculo.getAmplitudeMovimento()
+                    );
+                }).toList();
+
+        List<Objetivo> objetivos = exercicio.getObjetivos().stream()
+                .map(ExercicioObjetivo::getObjetivo)
+                .sorted()
+                .toList();
+
+        return new ExercicioResponse(
+                exercicio.getId(),
+                exercicio.getNome(),
+                exercicio.getDescricao(),
+                exercicio.getCaminhoImagem(),
+                exercicio.getUrlVideo(),
+                exercicio.getPlanoMovimento(),
+                exercicio.getCargaAxial(),
+                exercicio.getPressaoAbdominal(),
+                exercicio.getEstabilidadeExigida(),
+                exercicio.getNivelExperiencia(),
+                exercicio.getDificuldade(),
+                exercicio.getImpactoCervical(),
+                exercicio.getImpactoOmbro(),
+                exercicio.getImpactoCotovelo(),
+                exercicio.getImpactoPunho(),
+                exercicio.getImpactoToracica(),
+                exercicio.getImpactoLombar(),
+                exercicio.getImpactoQuadril(),
+                exercicio.getImpactoJoelho(),
+                exercicio.getImpactoTornozelo(),
+                exercicio.isAtivo(),
+                equipamentos,
+                gruposMusculares,
+                acoesArticulares,
+                objetivos
+        );
+    }
+
+    @Transactional
+    public ExercicioResponse createExercicio(SalvarExercicioRequest request) {
+        validarObjetivos(request);
+        Exercicio exercicio = new Exercicio();
+        aplicarDadosPrincipais(exercicio, request);
+        exercicio.setAtivo(true);
+        adicionarRelacionamentos(exercicio, request);
+
+        Exercicio exercicioSalvo = exercicioRepository.save(exercicio);
+        return convertToResponse(exercicioSalvo);
+    }
+
+    @Transactional
+    public ExercicioResponse updateExercicio(Long exercicioId, SalvarExercicioRequest request) {
+        validarObjetivos(request);
+        Exercicio exercicio = findById(exercicioId);
+
+        exercicio.limparRelacionamentos();
+        exercicioRepository.flush();
+
+        aplicarDadosPrincipais(exercicio, request);
+        adicionarRelacionamentos(exercicio, request);
+
+        Exercicio exercicioAtualizado = exercicioRepository.save(exercicio);
+        return convertToResponse(exercicioAtualizado);
+    }
+
+    @Transactional
+    public ExercicioResponse updateStatus(Long exercicioId, boolean ativo) {
+        Exercicio exercicio = findById(exercicioId);
+        exercicio.setAtivo(ativo);
+        return convertToResponse(exercicioRepository.save(exercicio));
     }
 
     @Transactional(readOnly = true)
-    public List<ExercicioResponseDTO> listarTodos() {
-        return exercicioRepository.findAll().stream()
-                .map(this::converterParaDTO)
-                .collect(Collectors.toList());
+    public List<ExercicioResponse> listAll() {
+        return exercicioRepository.findAllByOrderByNomeAsc().stream()
+                .map(this::convertToResponse)
+                .toList();
     }
 
     @Transactional(readOnly = true)
-    public ExercicioResponseDTO buscarPorId(Long id) {
-        Exercicio exercicio = exercicioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Exercício não encontrado com ID: " + id));
-        return converterParaDTO(exercicio);
+    public List<ExercicioResponse> listAtivos() {
+        return exercicioRepository.findAllByAtivoTrueOrderByNomeAsc().stream()
+                .map(this::convertToResponse)
+                .toList();
     }
 
-    private ExercicioResponseDTO converterParaDTO(Exercicio exercicio) {
-    ExercicioResponseDTO dto = new ExercicioResponseDTO();
-    dto.setId(exercicio.getId());
-    dto.setNome(exercicio.getNome());
-    dto.setDescricao(exercicio.getDescricao());
-    dto.setDificuldade(exercicio.getDificuldade());
-    dto.setImpacto(exercicio.getImpacto());
-    dto.setObjetivo(exercicio.getObjetivo());
-
-    // Ações Articulares
-    dto.setAcoesArticulares(
-        exercicio.getAcoesArticulares().stream()
-            .map(AcaoArticular::getNome)
-            .collect(Collectors.toList())
-    );
-
-    // Limitações Biomecânicas (Usa o Enum tipoLimitacao em vez de getNome)
-    dto.setRestricoesLimitacoes(
-        exercicio.getRestricoesLimitacoes().stream()
-            .map(lim -> lim.getTipoLimitacao().name())
-            .collect(Collectors.toList())
-    );
-
-    // Lesões
-    dto.setRestricoesLesoes(
-        exercicio.getRestricoesLesoes().stream()
-           .map(Lesao::getNomeLesao)// Altere para lesao.getNomeLesao() se o método da classe Lesao for getNomeLesao
-            .collect(Collectors.toList())
-    );
-
-    return dto;
-}
+    @Transactional(readOnly = true)
+    public ExercicioResponse getAtivo(Long exercicioId) {
+        return convertToResponse(findAtivoById(exercicioId));
+    }
 }

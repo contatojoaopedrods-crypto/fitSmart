@@ -16,6 +16,7 @@ import com.fitsmart.exception.ResourceNotFoundException;
 import com.fitsmart.model.Aluno;
 import com.fitsmart.model.Professor;
 import com.fitsmart.model.User;
+import com.fitsmart.model.enums.NivelExperiencia;
 import com.fitsmart.model.enums.UserRole;
 import com.fitsmart.repository.AlunoRepository;
 import com.fitsmart.repository.ProfessorRepository;
@@ -44,29 +45,27 @@ public class AlunoService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @Transactional
-    public AlunoResponse createAluno(
-            Long professorUserId,
-            CreateAlunoRequest request) {
+    private Aluno findAlunoDoProfessor(Long alunoId, Long professorUserId) {
+        return alunoRepository
+                .findByIdAndProfessor_User_Id(alunoId, professorUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Aluno não encontrado"));
+    }
 
+    @Transactional
+    public AlunoResponse createAluno(Long professorUserId, CreateAlunoRequest request) {
         Professor professor = professorRepository
                 .findByUser_Id(professorUserId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Professor não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Professor não encontrado"));
 
         CreateUserRequest userRequest = request.getUser();
 
-        String emailNormalizado = userRequest.email()
-                .trim()
-                .toLowerCase(Locale.ROOT);
+        String emailNormalizado = userRequest.email().trim().toLowerCase(Locale.ROOT);
 
         if (userRepository.existsByEmailIgnoreCase(emailNormalizado)) {
-            throw new EmailAlreadyExistsException(
-                    "Já existe um usuário cadastrado com este e-mail");
+            throw new EmailAlreadyExistsException("Já existe um usuário cadastrado com este e-mail");
         }
 
         User user = new User();
-
         user.setNome(userRequest.nome());
         user.setSobrenome(userRequest.sobrenome());
         user.setEmail(emailNormalizado);
@@ -85,47 +84,51 @@ public class AlunoService {
 
         User savedUser = userRepository.save(user);
 
-        Aluno aluno = new Aluno(savedUser, professor);
-
-        Aluno savedAluno = alunoRepository.save(aluno);
-
-        return convertToResponse(savedAluno);
-
-    }
-
-    @Transactional
-    public AlunoResponse linkAlunoByEmail(Long professorUserId, String email) {
-        Professor professor = professorRepository
-                .findByUser_Id(professorUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("Professor não encontrado"));
-
-        String emailNormalizado = email.trim().toLowerCase(Locale.ROOT);
-
-        User user = userRepository
-                .findByEmail(emailNormalizado)
-                .orElseThrow(() -> new ResourceNotFoundException("Nenhum usuário encontrado com o e-mail: " + email));
-
-        Aluno aluno = alunoRepository
-                .findByUser_Id(user.getId())
-                .orElseGet(() -> new Aluno(user, professor));
-
-        aluno.setProfessor(professor);
-
+        Aluno aluno = new Aluno(savedUser, professor, request.getNivelExperiencia());
         Aluno savedAluno = alunoRepository.save(aluno);
 
         return convertToResponse(savedAluno);
     }
+
+  @Transactional
+public AlunoResponse linkAlunoByEmail(Long professorUserId, String email) {
+    Professor professor = professorRepository
+            .findByUser_Id(professorUserId)
+            .orElseThrow(() -> new ResourceNotFoundException("Professor não encontrado"));
+
+    String emailNormalizado = email.trim().toLowerCase(Locale.ROOT);
+
+    User user = userRepository
+            .findByEmail(emailNormalizado)
+            .orElseThrow(() -> new ResourceNotFoundException("Nenhum usuário encontrado com o e-mail: " + email));
+
+    if (user.getTipo_usuario() != UserRole.ALUNO) {
+        throw new IllegalArgumentException("O usuário informado não é um aluno");
+    }
+
+    Aluno aluno = alunoRepository.findByUser_Id(user.getId()).orElse(null);
+
+    if (aluno == null) {
+        // Nível padrão, já que o campo é obrigatório no banco. O professor pode ajustar depois.
+        aluno = new Aluno(user, professor, NivelExperiencia.INICIANTE);
+    } else if (!aluno.getProfessor().getId().equals(professor.getId())) {
+        throw new IllegalStateException("Este aluno já está vinculado a outro professor");
+    }
+
+    return convertToResponse(alunoRepository.save(aluno));
+}
 
     private AlunoResponse convertToResponse(Aluno aluno) {
         return new AlunoResponse(
                 aluno.getId(),
                 userService.convertToResponse(aluno.getUser()),
-                aluno.getProfessor().getId());
+                aluno.getProfessor().getId(),
+                aluno.getNivelExperiencia()
+        );
     }
 
     @Transactional(readOnly = true)
     public List<AlunoResponse> listAlunosByProfessor(Long professorUserId) {
-
         return alunoRepository
                 .findAllByProfessor_User_Id(professorUserId)
                 .stream()
@@ -134,15 +137,20 @@ public class AlunoService {
     }
 
     @Transactional(readOnly = true)
-    public AlunoResponse getAlunoByIdAndProfessor(
-            Long alunoId,
-            Long professorUserId) {
-
-        Aluno aluno = alunoRepository
-                .findByIdAndProfessor_User_Id(alunoId, professorUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("Aluno não encontrado"));
-
-        return convertToResponse(aluno);
+    public AlunoResponse getAlunoByIdAndProfessor(Long alunoId, Long professorUserId) {
+        return convertToResponse(findAlunoDoProfessor(alunoId, professorUserId));
     }
 
+    @Transactional
+    public AlunoResponse updateNivelExperiencia(
+            Long alunoId,
+            Long professorUserId,
+            NivelExperiencia nivelExperiencia) {
+
+        Aluno aluno = findAlunoDoProfessor(alunoId, professorUserId);
+        aluno.setNivelExperiencia(nivelExperiencia);
+
+        Aluno alunoAtualizado = alunoRepository.save(aluno);
+        return convertToResponse(alunoAtualizado);
+    }
 }

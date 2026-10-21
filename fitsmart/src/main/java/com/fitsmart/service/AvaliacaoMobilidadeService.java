@@ -20,17 +20,24 @@ public class AvaliacaoMobilidadeService {
     private final AvaliacaoFisicaRepository
             avaliacaoFisicaRepository;
 
+    private final StatusAvaliacaoComplementarService
+            statusService;
+
     public AvaliacaoMobilidadeService(
             AvaliacaoMobilidadeRepository
                     avaliacaoMobilidadeRepository,
             AvaliacaoFisicaRepository
-                    avaliacaoFisicaRepository) {
+                    avaliacaoFisicaRepository,
+            StatusAvaliacaoComplementarService
+                    statusService) {
 
         this.avaliacaoMobilidadeRepository =
                 avaliacaoMobilidadeRepository;
 
         this.avaliacaoFisicaRepository =
                 avaliacaoFisicaRepository;
+
+        this.statusService = statusService;
     }
 
     private AvaliacaoFisica findAvaliacaoDoProfessor(
@@ -81,6 +88,20 @@ public class AvaliacaoMobilidadeService {
         avaliacao.setObservacao(request.observacao());
     }
 
+    private boolean possuiTodosOsNiveis(
+            SalvarAvaliacaoMobilidadeRequest request) {
+
+        return request.cervical() != null
+                && request.ombro() != null
+                && request.cotovelo() != null
+                && request.punho() != null
+                && request.toracica() != null
+                && request.lombar() != null
+                && request.quadril() != null
+                && request.joelho() != null
+                && request.tornozelo() != null;
+    }
+
     private AvaliacaoMobilidadeResponse convertToResponse(
             AvaliacaoMobilidade avaliacao) {
 
@@ -129,14 +150,24 @@ public class AvaliacaoMobilidadeService {
                                 )
                         );
 
-        atualizarDados(avaliacao, request);
+        atualizarDados(
+                avaliacao,
+                request
+        );
 
         AvaliacaoMobilidade avaliacaoSalva =
                 avaliacaoMobilidadeRepository.save(
                         avaliacao
                 );
 
-        return convertToResponse(avaliacaoSalva);
+        statusService.atualizarMobilidadeConcluida(
+                avaliacaoFisica,
+                possuiTodosOsNiveis(request)
+        );
+
+        return convertToResponse(
+                avaliacaoSalva
+        );
     }
 
     @Transactional(readOnly = true)
@@ -152,8 +183,12 @@ public class AvaliacaoMobilidadeService {
         );
 
         AvaliacaoMobilidade avaliacao =
-                findMobilidade(avaliacaoId);
+                findMobilidade(
+                        avaliacaoId
+                );
 
-        return convertToResponse(avaliacao);
+        return convertToResponse(
+                avaliacao
+        );
     }
 }

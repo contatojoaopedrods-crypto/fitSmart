@@ -20,18 +20,34 @@ import com.fitsmart.repository.LimitacaoBiomecanicaRepository;
 @Service
 public class AvaliacaoBiomecanicaService {
 
-    private final AvaliacaoBiomecanicaRepository avaliacaoRepository;
-    private final AvaliacaoFisicaRepository avaliacaoFisicaRepository;
-    private final LimitacaoBiomecanicaRepository limitacaoRepository;
+    private final AvaliacaoBiomecanicaRepository
+            avaliacaoRepository;
+
+    private final AvaliacaoFisicaRepository
+            avaliacaoFisicaRepository;
+
+    private final LimitacaoBiomecanicaRepository
+            limitacaoRepository;
+
+    private final StatusAvaliacaoComplementarService
+            statusService;
 
     public AvaliacaoBiomecanicaService(
             AvaliacaoBiomecanicaRepository avaliacaoRepository,
             AvaliacaoFisicaRepository avaliacaoFisicaRepository,
-            LimitacaoBiomecanicaRepository limitacaoRepository) {
+            LimitacaoBiomecanicaRepository limitacaoRepository,
+            StatusAvaliacaoComplementarService statusService) {
 
-        this.avaliacaoRepository = avaliacaoRepository;
-        this.avaliacaoFisicaRepository = avaliacaoFisicaRepository;
-        this.limitacaoRepository = limitacaoRepository;
+        this.avaliacaoRepository =
+                avaliacaoRepository;
+
+        this.avaliacaoFisicaRepository =
+                avaliacaoFisicaRepository;
+
+        this.limitacaoRepository =
+                limitacaoRepository;
+
+        this.statusService = statusService;
     }
 
     private AvaliacaoFisica findAvaliacaoDoProfessor(
@@ -52,7 +68,8 @@ public class AvaliacaoBiomecanicaService {
                 );
     }
 
-    private LimitacaoBiomecanica findLimitacao(Long limitacaoId) {
+    private LimitacaoBiomecanica findLimitacao(
+            Long limitacaoId) {
 
         return limitacaoRepository
                 .findByIdAndAtivaTrue(limitacaoId)
@@ -68,7 +85,9 @@ public class AvaliacaoBiomecanicaService {
             CreateAvaliacaoBiomecanicaRequest request) {
 
         LimitacaoBiomecanica limitacao =
-                findLimitacao(request.limitacaoId());
+                findLimitacao(
+                        request.limitacaoId()
+                );
 
         return new AvaliacaoBiomecanica(
                 avaliacaoFisica,
@@ -100,10 +119,10 @@ public class AvaliacaoBiomecanicaService {
             AvaliacaoFisica avaliacaoFisica,
             List<AvaliacaoBiomecanica> itens) {
 
-        List<AvaliacaoBiomecanicaResponse> itensResponse = itens
-                .stream()
-                .map(this::convertToResponse)
-                .toList();
+        List<AvaliacaoBiomecanicaResponse> itensResponse =
+                itens.stream()
+                        .map(this::convertToResponse)
+                        .toList();
 
         return new AvaliacaoBiomecanicaCompletaResponse(
                 avaliacaoFisica.getId(),
@@ -127,20 +146,29 @@ public class AvaliacaoBiomecanicaService {
                 );
 
         avaliacaoRepository
-                .deleteAllByAvaliacaoFisica_Id(avaliacaoId);
+                .deleteAllByAvaliacaoFisica_Id(
+                        avaliacaoId
+                );
 
         avaliacaoRepository.flush();
 
-        List<AvaliacaoBiomecanica> novosItens = request.itens()
-                .stream()
-                .map(item -> montarItem(
-                        avaliacaoFisica,
-                        item
-                ))
-                .toList();
+        List<AvaliacaoBiomecanica> novosItens =
+                request.itens()
+                        .stream()
+                        .map(item -> montarItem(
+                                avaliacaoFisica,
+                                item
+                        ))
+                        .toList();
 
         List<AvaliacaoBiomecanica> itensSalvos =
-                avaliacaoRepository.saveAll(novosItens);
+                avaliacaoRepository.saveAll(
+                        novosItens
+                );
+
+        statusService.marcarBiomecanicaConcluida(
+                avaliacaoFisica
+        );
 
         return montarResponse(
                 avaliacaoFisica,
