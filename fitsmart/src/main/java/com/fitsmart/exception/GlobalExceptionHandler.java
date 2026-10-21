@@ -20,7 +20,8 @@ public class GlobalExceptionHandler {
         @ExceptionHandler({
                         EmailAlreadyExistsException.class,
                         CrefAlreadyExistsException.class,
-                        SelfDeactivationException.class
+                        SelfDeactivationException.class,
+                        AlunoAlreadyLinkedException.class
         })
 
         public ResponseEntity<ApiErrorResponse> handleConflict(
@@ -173,5 +174,15 @@ public class GlobalExceptionHandler {
                                 .status(HttpStatus.BAD_REQUEST)
                                 .body(response);
         }
-
+public class AlunoAlreadyLinkedException extends RuntimeException {
+    public AlunoAlreadyLinkedException(String message) {
+        super(message);
+    }
+    
+}
+public class InvalidUserTypeException extends RuntimeException {
+    public InvalidUserTypeException(String message) {
+        super(message);
+    }
+}
 }

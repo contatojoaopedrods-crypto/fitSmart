@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fitsmart.model.StatusTreino;
+import com.fitsmart.model.enums.StatusTreino;
 
 public class TreinoResponseDTO {
 

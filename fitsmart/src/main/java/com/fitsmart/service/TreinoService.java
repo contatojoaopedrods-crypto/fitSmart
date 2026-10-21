@@ -16,8 +16,8 @@ import com.fitsmart.model.Aluno;
 import com.fitsmart.model.Exercicio;
 import com.fitsmart.model.ItemTreino;
 import com.fitsmart.model.Professor;
-import com.fitsmart.model.StatusTreino;
 import com.fitsmart.model.Treino;
+import com.fitsmart.model.enums.StatusTreino;
 import com.fitsmart.repository.AlunoRepository;
 import com.fitsmart.repository.ExercicioRepository;
 import com.fitsmart.repository.ProfessorRepository;
@@ -68,6 +68,7 @@ public class TreinoService {
         return converterParaDTO(treinoSalvo);
     }
 
+    // Consulta do professor sobre os treinos de um aluno
     @Transactional(readOnly = true)
     public List<TreinoResponseDTO> listarTreinosDoAluno(Long professorUserId, Long alunoId) {
         return treinoRepository.findAllByAluno_IdAndProfessor_User_IdOrderByDataCriacaoDesc(alunoId, professorUserId)
@@ -76,10 +77,28 @@ public class TreinoService {
                 .collect(Collectors.toList());
     }
 
+    // Consulta direta pelo Aluno autenticado (usado no StudentWorkoutController)
+    @Transactional(readOnly = true)
+    public List<TreinoResponseDTO> listarTreinosDoAluno(Long studentUserId) {
+        return treinoRepository.findAllByAluno_User_Id(studentUserId)
+                .stream()
+                .map(this::converterParaDTO)
+                .collect(Collectors.toList());
+    }
+
+    // Detalhes do treino acessado pelo Professor
     @Transactional(readOnly = true)
     public TreinoResponseDTO buscarTreinoPorId(Long professorUserId, Long alunoId, Long treinoId) {
         Treino treino = treinoRepository.findByIdAndAluno_IdAndProfessor_User_Id(treinoId, alunoId, professorUserId)
                 .orElseThrow(() -> new RuntimeException("Treino não encontrado"));
+        return converterParaDTO(treino);
+    }
+
+    // Detalhes do treino acessado diretamente pelo Aluno
+    @Transactional(readOnly = true)
+    public TreinoResponseDTO buscarTreinoPorAluno(Long studentUserId, Long treinoId) {
+        Treino treino = treinoRepository.findByIdAndAluno_User_Id(treinoId, studentUserId)
+                .orElseThrow(() -> new RuntimeException("Treino não encontrado para este aluno"));
         return converterParaDTO(treino);
     }
 
@@ -89,8 +108,6 @@ public class TreinoService {
                 .orElseThrow(() -> new RuntimeException("Treino não encontrado"));
 
         treino.setObservacoes(dto.getObservacoes());
-        
-        // Atualiza a lista de itens sem alterar a tabela Exercicio original
         treino.getItens().clear();
 
         if (dto.getItens() != null) {

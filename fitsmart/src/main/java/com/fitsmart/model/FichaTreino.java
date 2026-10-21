@@ -6,8 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "ficha_treino")
@@ -40,6 +38,5 @@ public class FichaTreino {
     @JoinColumn(name = "id_professor", nullable = false)
     private Professor professor;
 
-    @OneToMany(mappedBy = "fichaTreino", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ItemTreino> itens = new ArrayList<>();
+   
 }

@@ -1,46 +1,70 @@
 package com.fitsmart.controller;
 
-import com.fitsmart.dto.FeedbackRequestDTO;
-import com.fitsmart.model.WorkoutFeedback;
-import com.fitsmart.model.WorkoutSession;
-import com.fitsmart.service.WorkoutSessionService;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fitsmart.dto.FeedbackRequestDTO;
+import com.fitsmart.dto.TreinoResponseDTO;
+import com.fitsmart.model.WorkoutFeedback;
+import com.fitsmart.model.WorkoutSession;
+import com.fitsmart.service.TreinoService;
+import com.fitsmart.service.WorkoutSessionService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/students/me")
 @PreAuthorize("hasRole('ALUNO')")
 public class StudentWorkoutController {
 
-    @Autowired
-    private WorkoutSessionService sessionService;
+    private final WorkoutSessionService sessionService;
+    private final TreinoService treinoService;
 
-    private Long getAuthenticatedStudentId(Authentication authentication) {
-        return Long.parseLong(authentication.getName());
+    public StudentWorkoutController(WorkoutSessionService sessionService, TreinoService treinoService) {
+        this.sessionService = sessionService;
+        this.treinoService = treinoService;
     }
 
-    // 1. Listar treinos do aluno
+    private Long getAuthenticatedStudentUserId(Jwt jwt) {
+        return Long.valueOf(jwt.getClaim("user_id").toString());
+    }
+
+   // 1. Listar treinos do aluno autenticado
     @GetMapping("/workouts")
-    public ResponseEntity<?> getMyWorkouts() {
-        return ResponseEntity.ok("Lista de treinos do aluno");
+    public ResponseEntity<List<TreinoResponseDTO>> getWorkouts(@AuthenticationPrincipal Jwt jwt) {
+        Long studentUserId = getAuthenticatedStudentUserId(jwt);
+        List<TreinoResponseDTO> treinos = treinoService.listarTreinosDoAluno(studentUserId, studentUserId);
+        return ResponseEntity.ok(treinos);
     }
 
-    // 2. Ver detalhes do treino
+    // 2. Ver detalhes de um treino específico do aluno
     @GetMapping("/workouts/{id}")
-    public ResponseEntity<?> getWorkoutById(@PathVariable Long id) {
-        return ResponseEntity.ok("Detalhes do treino ID: " + id);
+    public ResponseEntity<TreinoResponseDTO> getWorkoutById(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Jwt jwt) {
+        Long studentUserId = getAuthenticatedStudentUserId(jwt);
+        TreinoResponseDTO treino = treinoService.buscarTreinoPorId(studentUserId, id, id);
+        return ResponseEntity.ok(treino);
     }
 
     // 3. Iniciar sessão de treino
     @PostMapping("/workouts/{id}/sessions")
     public ResponseEntity<WorkoutSession> startSession(
             @PathVariable Long id,
-            Authentication authentication) {
-        Long studentId = getAuthenticatedStudentId(authentication);
-        WorkoutSession session = sessionService.startSession(id, studentId);
+            @AuthenticationPrincipal Jwt jwt) {
+        Long studentUserId = getAuthenticatedStudentUserId(jwt);
+        WorkoutSession session = sessionService.startSession(id, studentUserId);
         return ResponseEntity.ok(session);
     }
 
@@ -48,9 +72,9 @@ public class StudentWorkoutController {
     @PatchMapping("/sessions/{sessionId}/finish")
     public ResponseEntity<WorkoutSession> finishSession(
             @PathVariable Long sessionId,
-            Authentication authentication) {
-        Long studentId = getAuthenticatedStudentId(authentication);
-        WorkoutSession session = sessionService.finishSession(sessionId, studentId);
+            @AuthenticationPrincipal Jwt jwt) {
+        Long studentUserId = getAuthenticatedStudentUserId(jwt);
+        WorkoutSession session = sessionService.finishSession(sessionId, studentUserId);
         return ResponseEntity.ok(session);
     }
 
@@ -58,9 +82,9 @@ public class StudentWorkoutController {
     @PatchMapping("/sessions/{sessionId}/interrupt")
     public ResponseEntity<WorkoutSession> interruptSession(
             @PathVariable Long sessionId,
-            Authentication authentication) {
-        Long studentId = getAuthenticatedStudentId(authentication);
-        WorkoutSession session = sessionService.interruptSession(sessionId, studentId);
+            @AuthenticationPrincipal Jwt jwt) {
+        Long studentUserId = getAuthenticatedStudentUserId(jwt);
+        WorkoutSession session = sessionService.interruptSession(sessionId, studentUserId);
         return ResponseEntity.ok(session);
     }
 
@@ -68,10 +92,10 @@ public class StudentWorkoutController {
     @PostMapping("/sessions/{sessionId}/feedback")
     public ResponseEntity<WorkoutFeedback> sendFeedback(
             @PathVariable Long sessionId,
-            @RequestBody FeedbackRequestDTO feedbackDTO,
-            Authentication authentication) {
-        Long studentId = getAuthenticatedStudentId(authentication);
-        WorkoutFeedback feedback = sessionService.saveFeedback(sessionId, studentId, feedbackDTO);
+            @Valid @RequestBody FeedbackRequestDTO feedbackDTO,
+            @AuthenticationPrincipal Jwt jwt) {
+        Long studentUserId = getAuthenticatedStudentUserId(jwt);
+        WorkoutFeedback feedback = sessionService.saveFeedback(sessionId, studentUserId, feedbackDTO);
         return ResponseEntity.ok(feedback);
     }
 }

@@ -1,6 +1,7 @@
 package com.fitsmart.config;
 
 import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -20,21 +21,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // 1. Ativa a verificação de CORS no Spring Security
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        // 2. Libera requisições OPTIONS (Preflight) globalmente
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.GET, "/teste").permitAll()
                         
-                        // 3. Permite qualquer método (POST, OPTIONS) para o login
-                        .requestMatchers("/auth/login","/login","/auth/**").permitAll()
+                        // Rotas públicas de autenticação e cadastro
+                        .requestMatchers("/auth/login", "/login", "/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/professors", "/students").permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/professors").permitAll()
                         .requestMatchers("/professors/me", "/professors/me/**").hasRole("PROFESSOR")
                         .requestMatchers(HttpMethod.GET, "/users/me").authenticated()
                         .requestMatchers(HttpMethod.GET, "/users", "/users/*").hasRole("ADMIN")
@@ -48,13 +46,13 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // Bean de configuração explicitando a origem do Expo (localhost:8081)
+    // Configuração de CORS flexível para desenvolvimento (localhost e 127.0.0.1)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:8081"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
