@@ -21,6 +21,8 @@ import com.fitsmart.model.enums.UserRole;
 import com.fitsmart.repository.AlunoRepository;
 import com.fitsmart.repository.ProfessorRepository;
 import com.fitsmart.repository.UserRepository;
+import com.fitsmart.exception.AlunoAlreadyLinkedException;
+import com.fitsmart.exception.InvalidUserTypeException;
 
 @Service
 public class AlunoService {
@@ -103,7 +105,7 @@ public AlunoResponse linkAlunoByEmail(Long professorUserId, String email) {
             .orElseThrow(() -> new ResourceNotFoundException("Nenhum usuário encontrado com o e-mail: " + email));
 
     if (user.getTipo_usuario() != UserRole.ALUNO) {
-        throw new IllegalArgumentException("O usuário informado não é um aluno");
+        throw new InvalidUserTypeException("O usuário informado não é um aluno");
     }
 
     Aluno aluno = alunoRepository.findByUser_Id(user.getId()).orElse(null);
@@ -112,7 +114,7 @@ public AlunoResponse linkAlunoByEmail(Long professorUserId, String email) {
         // Nível padrão, já que o campo é obrigatório no banco. O professor pode ajustar depois.
         aluno = new Aluno(user, professor, NivelExperiencia.INICIANTE);
     } else if (!aluno.getProfessor().getId().equals(professor.getId())) {
-        throw new IllegalStateException("Este aluno já está vinculado a outro professor");
+        throw new AlunoAlreadyLinkedException("Este aluno já está vinculado a outro professor");
     }
 
     return convertToResponse(alunoRepository.save(aluno));

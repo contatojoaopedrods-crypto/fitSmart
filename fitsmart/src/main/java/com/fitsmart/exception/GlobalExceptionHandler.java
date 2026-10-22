@@ -121,6 +121,24 @@ public class GlobalExceptionHandler {
                                 .body(response);
         }
 
+        @ExceptionHandler(InvalidUserTypeException.class)
+        public ResponseEntity<ApiErrorResponse> handleInvalidUserType(
+                        InvalidUserTypeException exception,
+                        HttpServletRequest request) {
+
+                ApiErrorResponse response = new ApiErrorResponse(
+                                LocalDateTime.now(),
+                                HttpStatus.BAD_REQUEST.value(),
+                                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                                exception.getMessage(),
+                                request.getRequestURI(),
+                                null);
+
+                return ResponseEntity
+                                .status(HttpStatus.BAD_REQUEST)
+                                .body(response);
+        }
+
         @ExceptionHandler(InvalidCredentialsException.class)
         public ResponseEntity<ApiErrorResponse> handleInvalidCredentials(
                         InvalidCredentialsException exception,
@@ -174,15 +192,5 @@ public class GlobalExceptionHandler {
                                 .status(HttpStatus.BAD_REQUEST)
                                 .body(response);
         }
-public class AlunoAlreadyLinkedException extends RuntimeException {
-    public AlunoAlreadyLinkedException(String message) {
-        super(message);
-    }
-    
-}
-public class InvalidUserTypeException extends RuntimeException {
-    public InvalidUserTypeException(String message) {
-        super(message);
-    }
-}
+
 }
