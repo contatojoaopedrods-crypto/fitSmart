@@ -14,11 +14,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import com.fitsmart.dto.AlunoResponse;
 import com.fitsmart.dto.CreateAlunoRequest;
 import com.fitsmart.dto.CreateProfessorRequest;
+import com.fitsmart.dto.LinkAlunoRequest;
 import com.fitsmart.dto.ProfessorResponse;
 import com.fitsmart.service.AlunoService;
 import com.fitsmart.service.ProfessorService;
+import com.fitsmart.security.JwtUtils;
+
 import java.util.List;
-import java.util.Map;
 
 import jakarta.validation.Valid;
 
@@ -52,7 +54,7 @@ public class ProfessorController {
         public ResponseEntity<ProfessorResponse> getMyProfile(
                         @AuthenticationPrincipal Jwt jwt) {
 
-                Long userId = Long.valueOf(jwt.getClaim("user_id").toString());
+                Long userId = JwtUtils.getUserId(jwt);
 
                 ProfessorResponse response = professorService.getProfessorByUserId(userId);
 
@@ -64,8 +66,7 @@ public class ProfessorController {
                         @AuthenticationPrincipal Jwt jwt,
                         @Valid @RequestBody CreateAlunoRequest request) {
 
-                Long professorUserId = Long.valueOf(
-                                jwt.getClaim("user_id").toString());
+                Long professorUserId = JwtUtils.getUserId(jwt);
 
                 AlunoResponse response = alunoService.createAluno(
                                 professorUserId,
@@ -79,16 +80,13 @@ public class ProfessorController {
         @PostMapping("/me/students/link")
         public ResponseEntity<AlunoResponse> linkStudent(
                         @AuthenticationPrincipal Jwt jwt,
-                        @RequestBody Map<String, String> request) {
+                        @Valid @RequestBody LinkAlunoRequest request) {
 
-                Long professorUserId = Long.valueOf(
-                                jwt.getClaim("user_id").toString());
-
-                String email = request.get("email");
+                Long professorUserId = JwtUtils.getUserId(jwt);
 
                 AlunoResponse response = alunoService.linkAlunoByEmail(
                                 professorUserId,
-                                email);
+                                request.email());
 
                 return ResponseEntity.ok(response);
         }
@@ -97,8 +95,7 @@ public class ProfessorController {
         public ResponseEntity<List<AlunoResponse>> listMyStudents(
                         @AuthenticationPrincipal Jwt jwt) {
 
-                Long professorUserId = Long.valueOf(
-                                jwt.getClaim("user_id").toString());
+                Long professorUserId = JwtUtils.getUserId(jwt);
 
                 List<AlunoResponse> students = alunoService.listAlunosByProfessor(professorUserId);
 
@@ -110,8 +107,7 @@ public class ProfessorController {
                         @AuthenticationPrincipal Jwt jwt,
                         @PathVariable Long studentId) {
 
-                Long professorUserId = Long.valueOf(
-                                jwt.getClaim("user_id").toString());
+                Long professorUserId = JwtUtils.getUserId(jwt);
 
                 AlunoResponse student = alunoService.getAlunoByIdAndProfessor(
                                 studentId,

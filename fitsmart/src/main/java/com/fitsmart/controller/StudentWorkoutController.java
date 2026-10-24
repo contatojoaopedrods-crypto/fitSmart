@@ -18,6 +18,7 @@ import com.fitsmart.dto.FeedbackRequestDTO;
 import com.fitsmart.dto.TreinoResponseDTO;
 import com.fitsmart.model.WorkoutFeedback;
 import com.fitsmart.model.WorkoutSession;
+import com.fitsmart.security.JwtUtils;
 import com.fitsmart.service.TreinoService;
 import com.fitsmart.service.WorkoutSessionService;
 
@@ -37,10 +38,10 @@ public class StudentWorkoutController {
     }
 
     private Long getAuthenticatedStudentUserId(Jwt jwt) {
-        return Long.valueOf(jwt.getClaim("user_id").toString());
+        return JwtUtils.getUserId(jwt);
     }
 
-   // 1. Listar treinos do aluno autenticado
+    // 1. Listar treinos do aluno autenticado
     @GetMapping("/workouts")
     public ResponseEntity<List<TreinoResponseDTO>> getWorkouts(@AuthenticationPrincipal Jwt jwt) {
         Long studentUserId = getAuthenticatedStudentUserId(jwt);

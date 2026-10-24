@@ -49,7 +49,7 @@ public class AuthService {
         }
 
         if (!user.isAtivo()) {
-            throw new InactiveUserException("Este usário está inativo");
+            throw new InactiveUserException("Este usuário está inativo");
         }
 
         String token = jwtService.generateToken(user);

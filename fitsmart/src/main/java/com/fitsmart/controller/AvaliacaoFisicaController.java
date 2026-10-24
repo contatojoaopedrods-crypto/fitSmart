@@ -16,6 +16,7 @@ import java.util.List;
 import com.fitsmart.dto.AvaliacaoFisicaResponse;
 import com.fitsmart.dto.CreateAvaliacaoFisicaRequest;
 import com.fitsmart.dto.UpdateAvaliacaoFisicaRequest;
+import com.fitsmart.security.JwtUtils;
 import com.fitsmart.service.AvaliacaoFisicaService;
 
 import jakarta.validation.Valid;
@@ -51,14 +52,7 @@ public class AvaliacaoFisicaController {
     }
 
     private Long getAuthenticatedUserId(Jwt jwt) {
-
-        Object userIdClaim = jwt.getClaim("user_id");
-
-        if (userIdClaim instanceof Number number) {
-            return number.longValue();
-        }
-
-        return Long.valueOf(userIdClaim.toString());
+        return JwtUtils.getUserId(jwt);
     }
 
     @GetMapping

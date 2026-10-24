@@ -11,14 +11,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fitsmart.dto.AlunoResponse;
 import com.fitsmart.dto.AtualizarNivelExperienciaRequest;
+import com.fitsmart.security.JwtUtils;
 import com.fitsmart.service.AlunoService;
 
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping(
-    "/professors/me/students/{studentId}/experience"
-)
+@RequestMapping("/professors/me/students/{studentId}/experience")
 public class AlunoExperienciaController {
 
     private final AlunoService alunoService;
@@ -30,34 +29,22 @@ public class AlunoExperienciaController {
     }
 
     @PatchMapping
-    public ResponseEntity<AlunoResponse>
-            updateExperience(
-                    @AuthenticationPrincipal Jwt jwt,
-                    @PathVariable Long studentId,
-                    @Valid @RequestBody
-                    AtualizarNivelExperienciaRequest request) {
+    public ResponseEntity<AlunoResponse> updateExperience(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable Long studentId,
+            @Valid @RequestBody AtualizarNivelExperienciaRequest request) {
 
-        Long professorUserId =
-                getAuthenticatedUserId(jwt);
+        Long professorUserId = getAuthenticatedUserId(jwt);
 
-        AlunoResponse response =
-                alunoService.updateNivelExperiencia(
-                        studentId,
-                        professorUserId,
-                        request.nivelExperiencia()
-                );
+        AlunoResponse response = alunoService.updateNivelExperiencia(
+                studentId,
+                professorUserId,
+                request.nivelExperiencia());
 
         return ResponseEntity.ok(response);
     }
 
     private Long getAuthenticatedUserId(Jwt jwt) {
-
-        Object userIdClaim = jwt.getClaim("user_id");
-
-        if (userIdClaim instanceof Number number) {
-            return number.longValue();
-        }
-
-        return Long.valueOf(userIdClaim.toString());
+        return JwtUtils.getUserId(jwt);
     }
 }

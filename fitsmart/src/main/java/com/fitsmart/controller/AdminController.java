@@ -12,6 +12,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import com.fitsmart.dto.UpdateUserStatusRequest;
 import com.fitsmart.dto.UserResponse;
 import com.fitsmart.service.UserService;
+import com.fitsmart.security.JwtUtils;
 
 import jakarta.validation.Valid;
 
@@ -32,13 +33,12 @@ public class AdminController {
             @Valid @RequestBody UpdateUserStatusRequest request) {
 
         Long authenticatedAdminId = Long.valueOf(
-                jwt.getClaim("user_id").toString()  
-        );
+                JwtUtils.getUserId(jwt));
 
         UserResponse response = userService.updateUserStatus(
-            userId,
-            authenticatedAdminId,
-             request);
+                userId,
+                authenticatedAdminId,
+                request);
 
         return ResponseEntity.ok(response);
     }

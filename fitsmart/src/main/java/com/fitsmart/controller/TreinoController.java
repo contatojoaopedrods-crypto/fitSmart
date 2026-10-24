@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fitsmart.dto.AtualizarTreinoDTO;
 import com.fitsmart.dto.CriarTreinoDTO;
 import com.fitsmart.dto.TreinoResponseDTO;
+import com.fitsmart.security.JwtUtils;
 import com.fitsmart.service.TreinoService;
 
 @RestController
@@ -35,8 +36,8 @@ public class TreinoController {
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long studentId,
             @RequestBody CriarTreinoDTO dto) {
-        
-        Long professorUserId = Long.valueOf(jwt.getClaim("user_id").toString());
+
+        Long professorUserId = JwtUtils.getUserId(jwt);
         TreinoResponseDTO response = treinoService.criarRascunho(professorUserId, studentId, dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -46,8 +47,8 @@ public class TreinoController {
     public ResponseEntity<List<TreinoResponseDTO>> listarTreinosDoAluno(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long studentId) {
-        
-        Long professorUserId = Long.valueOf(jwt.getClaim("user_id").toString());
+
+        Long professorUserId = JwtUtils.getUserId(jwt);
         return ResponseEntity.ok(treinoService.listarTreinosDoAluno(professorUserId, studentId));
     }
 
@@ -57,8 +58,8 @@ public class TreinoController {
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long studentId,
             @PathVariable Long workoutId) {
-        
-        Long professorUserId = Long.valueOf(jwt.getClaim("user_id").toString());
+
+        Long professorUserId = JwtUtils.getUserId(jwt);
         return ResponseEntity.ok(treinoService.buscarTreinoPorId(professorUserId, studentId, workoutId));
     }
 
@@ -69,8 +70,8 @@ public class TreinoController {
             @PathVariable Long studentId,
             @PathVariable Long workoutId,
             @RequestBody AtualizarTreinoDTO dto) {
-        
-        Long professorUserId = Long.valueOf(jwt.getClaim("user_id").toString());
+
+        Long professorUserId = JwtUtils.getUserId(jwt);
         return ResponseEntity.ok(treinoService.atualizarTreino(professorUserId, studentId, workoutId, dto));
     }
 
@@ -80,8 +81,8 @@ public class TreinoController {
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long studentId,
             @PathVariable Long workoutId) {
-        
-        Long professorUserId = Long.valueOf(jwt.getClaim("user_id").toString());
+
+        Long professorUserId = JwtUtils.getUserId(jwt);
         return ResponseEntity.ok(treinoService.publicarTreino(professorUserId, studentId, workoutId));
     }
 }

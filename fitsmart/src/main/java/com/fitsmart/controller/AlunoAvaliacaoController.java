@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fitsmart.dto.AvaliacaoFisicaResponse;
 import com.fitsmart.service.AvaliacaoFisicaService;
+import com.fitsmart.security.JwtUtils;
+
 
 @RestController
 @RequestMapping("/students/me/assessments")
@@ -29,7 +31,7 @@ public class AlunoAvaliacaoController {
             listMyAssessments(
                     @AuthenticationPrincipal Jwt jwt) {
 
-        Long alunoUserId = getAuthenticatedUserId(jwt);
+        Long alunoUserId = JwtUtils.getUserId(jwt);
 
         List<AvaliacaoFisicaResponse> response =
                 avaliacaoFisicaService
@@ -38,14 +40,4 @@ public class AlunoAvaliacaoController {
         return ResponseEntity.ok(response);
     }
 
-    private Long getAuthenticatedUserId(Jwt jwt) {
-
-        Object userIdClaim = jwt.getClaim("user_id");
-
-        if (userIdClaim instanceof Number number) {
-            return number.longValue();
-        }
-
-        return Long.valueOf(userIdClaim.toString());
-    }
 }

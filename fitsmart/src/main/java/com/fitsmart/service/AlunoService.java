@@ -92,41 +92,41 @@ public class AlunoService {
         return convertToResponse(savedAluno);
     }
 
-  @Transactional
-public AlunoResponse linkAlunoByEmail(Long professorUserId, String email) {
-    Professor professor = professorRepository
-            .findByUser_Id(professorUserId)
-            .orElseThrow(() -> new ResourceNotFoundException("Professor não encontrado"));
+    @Transactional
+    public AlunoResponse linkAlunoByEmail(Long professorUserId, String email) {
+        Professor professor = professorRepository
+                .findByUser_Id(professorUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Professor não encontrado"));
 
-    String emailNormalizado = email.trim().toLowerCase(Locale.ROOT);
+        String emailNormalizado = email.trim().toLowerCase(Locale.ROOT);
 
-    User user = userRepository
-            .findByEmail(emailNormalizado)
-            .orElseThrow(() -> new ResourceNotFoundException("Nenhum usuário encontrado com o e-mail: " + email));
+        User user = userRepository
+                .findByEmailIgnoreCase(emailNormalizado)
+                .orElseThrow(() -> new ResourceNotFoundException("Nenhum usuário encontrado com o e-mail: " + email));
 
-    if (user.getTipo_usuario() != UserRole.ALUNO) {
-        throw new InvalidUserTypeException("O usuário informado não é um aluno");
+        if (user.getTipo_usuario() != UserRole.ALUNO) {
+            throw new InvalidUserTypeException("O usuário informado não é um aluno");
+        }
+
+        Aluno aluno = alunoRepository.findByUser_Id(user.getId()).orElse(null);
+
+        if (aluno == null) {
+            // Nível padrão, já que o campo é obrigatório no banco. O professor pode ajustar
+            // depois.
+            aluno = new Aluno(user, professor, NivelExperiencia.INICIANTE);
+        } else if (!aluno.getProfessor().getId().equals(professor.getId())) {
+            throw new AlunoAlreadyLinkedException("Este aluno já está vinculado a outro professor");
+        }
+
+        return convertToResponse(alunoRepository.save(aluno));
     }
-
-    Aluno aluno = alunoRepository.findByUser_Id(user.getId()).orElse(null);
-
-    if (aluno == null) {
-        // Nível padrão, já que o campo é obrigatório no banco. O professor pode ajustar depois.
-        aluno = new Aluno(user, professor, NivelExperiencia.INICIANTE);
-    } else if (!aluno.getProfessor().getId().equals(professor.getId())) {
-        throw new AlunoAlreadyLinkedException("Este aluno já está vinculado a outro professor");
-    }
-
-    return convertToResponse(alunoRepository.save(aluno));
-}
 
     private AlunoResponse convertToResponse(Aluno aluno) {
         return new AlunoResponse(
                 aluno.getId(),
                 userService.convertToResponse(aluno.getUser()),
                 aluno.getProfessor().getId(),
-                aluno.getNivelExperiencia()
-        );
+                aluno.getNivelExperiencia());
     }
 
     @Transactional(readOnly = true)

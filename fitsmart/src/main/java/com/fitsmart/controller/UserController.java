@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import com.fitsmart.dto.UpdatePasswordRequest;
 import com.fitsmart.dto.UpdateUserRequest;
 import com.fitsmart.dto.UserResponse;
+import com.fitsmart.security.JwtUtils;
 import com.fitsmart.service.UserService;
 
 @RestController
@@ -28,8 +29,6 @@ public class UserController {
     public UserController(UserService userService) {
         this.userService = userService;
     }
-
-
 
     @GetMapping
     public ResponseEntity<List<UserResponse>> listUsers() {
@@ -97,14 +96,6 @@ public class UserController {
     }
 
     private Long getAuthenticatedUserId(Jwt jwt) {
-
-        Object userIdClaim = jwt.getClaim("user_id");
-
-        if (userIdClaim instanceof Number number) {
-            return number.longValue();
-        }
-
-        return Long.valueOf(userIdClaim.toString());
+        return JwtUtils.getUserId(jwt);
     }
-
 }

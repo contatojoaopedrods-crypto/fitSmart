@@ -10,70 +10,53 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fitsmart.dto.StatusAvaliacaoComplementarResponse;
+import com.fitsmart.security.JwtUtils;
 import com.fitsmart.service.StatusAvaliacaoComplementarService;
 
 @RestController
-@RequestMapping(
-    "/professors/me/students/{studentId}"
-    + "/assessments/{assessmentId}/completion-status"
-)
+@RequestMapping("/professors/me/students/{studentId}"
+                + "/assessments/{assessmentId}/completion-status")
 public class StatusAvaliacaoComplementarController {
 
-    private final StatusAvaliacaoComplementarService
-            statusService;
+        private final StatusAvaliacaoComplementarService statusService;
 
-    public StatusAvaliacaoComplementarController(
-            StatusAvaliacaoComplementarService statusService) {
+        public StatusAvaliacaoComplementarController(
+                        StatusAvaliacaoComplementarService statusService) {
 
-        this.statusService = statusService;
-    }
-
-    @GetMapping
-    public ResponseEntity<StatusAvaliacaoComplementarResponse>
-            getStatus(
-                    @AuthenticationPrincipal Jwt jwt,
-                    @PathVariable Long studentId,
-                    @PathVariable Long assessmentId) {
-
-        Long professorUserId =
-                getAuthenticatedUserId(jwt);
-
-        return ResponseEntity.ok(
-                statusService.getStatus(
-                        professorUserId,
-                        studentId,
-                        assessmentId
-                )
-        );
-    }
-
-    @PutMapping("/injury-history")
-    public ResponseEntity<StatusAvaliacaoComplementarResponse>
-            reviewInjuryHistory(
-                    @AuthenticationPrincipal Jwt jwt,
-                    @PathVariable Long studentId,
-                    @PathVariable Long assessmentId) {
-
-        Long professorUserId =
-                getAuthenticatedUserId(jwt);
-
-        return ResponseEntity.ok(
-                statusService.marcarHistoricoLesoesRevisado(
-                        professorUserId,
-                        studentId,
-                        assessmentId
-                )
-        );
-    }
-
-    private Long getAuthenticatedUserId(Jwt jwt) {
-
-        Object userIdClaim = jwt.getClaim("user_id");
-
-        if (userIdClaim instanceof Number number) {
-            return number.longValue();
+                this.statusService = statusService;
         }
 
-        return Long.valueOf(userIdClaim.toString());
-    }
+        @GetMapping
+        public ResponseEntity<StatusAvaliacaoComplementarResponse> getStatus(
+                        @AuthenticationPrincipal Jwt jwt,
+                        @PathVariable Long studentId,
+                        @PathVariable Long assessmentId) {
+
+                Long professorUserId = getAuthenticatedUserId(jwt);
+
+                return ResponseEntity.ok(
+                                statusService.getStatus(
+                                                professorUserId,
+                                                studentId,
+                                                assessmentId));
+        }
+
+        @PutMapping("/injury-history")
+        public ResponseEntity<StatusAvaliacaoComplementarResponse> reviewInjuryHistory(
+                        @AuthenticationPrincipal Jwt jwt,
+                        @PathVariable Long studentId,
+                        @PathVariable Long assessmentId) {
+
+                Long professorUserId = getAuthenticatedUserId(jwt);
+
+                return ResponseEntity.ok(
+                                statusService.marcarHistoricoLesoesRevisado(
+                                                professorUserId,
+                                                studentId,
+                                                assessmentId));
+        }
+
+        private Long getAuthenticatedUserId(Jwt jwt) {
+                return JwtUtils.getUserId(jwt);
+        }
 }

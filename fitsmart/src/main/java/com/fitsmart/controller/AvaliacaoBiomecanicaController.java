@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fitsmart.dto.AvaliacaoBiomecanicaCompletaResponse;
 import com.fitsmart.dto.SalvarAvaliacaoBiomecanicaRequest;
+import com.fitsmart.security.JwtUtils;
 import com.fitsmart.service.AvaliacaoBiomecanicaService;
 
 import jakarta.validation.Valid;
@@ -72,14 +73,7 @@ public class AvaliacaoBiomecanicaController {
         return ResponseEntity.ok(response);
     }
 
-    private Long getAuthenticatedUserId(Jwt jwt) {
-
-        Object userIdClaim = jwt.getClaim("user_id");
-
-        if (userIdClaim instanceof Number number) {
-            return number.longValue();
-        }
-
-        return Long.valueOf(userIdClaim.toString());
-    }
+ private Long getAuthenticatedUserId(Jwt jwt) {
+    return JwtUtils.getUserId(jwt);
+}
 }
