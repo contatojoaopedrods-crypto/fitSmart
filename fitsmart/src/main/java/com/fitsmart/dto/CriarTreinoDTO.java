@@ -3,10 +3,12 @@ package com.fitsmart.dto;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.validation.Valid;
+
 public class CriarTreinoDTO {
 
     private String observacoes;
-    private List<ItemTreinoInputDTO> itens = new ArrayList<>();
+    private List<@Valid ItemTreinoInputDTO> itens = new ArrayList<>();
 
     public CriarTreinoDTO() {}
 

@@ -11,6 +11,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.security.access.AccessDeniedException;
 
 import com.fitsmart.dto.ApiErrorResponse;
 
@@ -23,7 +24,8 @@ public class GlobalExceptionHandler {
                         EmailAlreadyExistsException.class,
                         CrefAlreadyExistsException.class,
                         SelfDeactivationException.class,
-                        AlunoAlreadyLinkedException.class
+                        AlunoAlreadyLinkedException.class,
+                        
         })
 
         public ResponseEntity<ApiErrorResponse> handleConflict(
@@ -231,4 +233,39 @@ public class GlobalExceptionHandler {
                                 .body(response);
         }
 
+        @ExceptionHandler(AccessDeniedException.class)
+        public ResponseEntity<ApiErrorResponse> handleAccessDenied(
+                        AccessDeniedException exception,
+                        HttpServletRequest request) {
+
+                ApiErrorResponse response = new ApiErrorResponse(
+                                LocalDateTime.now(),
+                                HttpStatus.FORBIDDEN.value(),
+                                HttpStatus.FORBIDDEN.getReasonPhrase(),
+                                "Acesso negado: você não tem permissão para acessar este recurso",
+                                request.getRequestURI(),
+                                null);
+
+                return ResponseEntity
+                                .status(HttpStatus.FORBIDDEN)
+                                .body(response);
+        }
+
+        @ExceptionHandler(Exception.class)
+        public ResponseEntity<ApiErrorResponse> handleGenericException(
+                        Exception exception,
+                        HttpServletRequest request) {
+
+                ApiErrorResponse response = new ApiErrorResponse(
+                                LocalDateTime.now(),
+                                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                                HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                                "Ocorreu um erro interno no servidor. Tente novamente mais tarde.",
+                                request.getRequestURI(),
+                                null);
+
+                return ResponseEntity
+                                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body(response);
+        }
 }

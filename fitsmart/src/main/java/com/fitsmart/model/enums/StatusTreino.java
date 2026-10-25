@@ -4,5 +4,6 @@ public enum StatusTreino {
     RASCUNHO,
     ATIVO,
     ARQUIVADO,
-    PUBLICADO
+    PUBLICADO,
+    HISTORICO
 }

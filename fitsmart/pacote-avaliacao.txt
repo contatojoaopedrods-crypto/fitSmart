@@ -1,0 +1,1321 @@
+﻿
+===== AvaliacaoBiomecanicaController.java =====
+
+package com.fitsmart.controller;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fitsmart.dto.AvaliacaoBiomecanicaCompletaResponse;
+import com.fitsmart.dto.SalvarAvaliacaoBiomecanicaRequest;
+import com.fitsmart.security.JwtUtils;
+import com.fitsmart.service.AvaliacaoBiomecanicaService;
+
+import jakarta.validation.Valid;
+
+@RestController
+@RequestMapping(
+    "/professors/me/students/{studentId}"
+    + "/assessments/{assessmentId}/biomechanical-assessment"
+)
+public class AvaliacaoBiomecanicaController {
+
+    private final AvaliacaoBiomecanicaService avaliacaoService;
+
+    public AvaliacaoBiomecanicaController(
+            AvaliacaoBiomecanicaService avaliacaoService) {
+
+        this.avaliacaoService = avaliacaoService;
+    }
+
+    @PutMapping
+    public ResponseEntity<AvaliacaoBiomecanicaCompletaResponse>
+            saveAssessment(
+                    @AuthenticationPrincipal Jwt jwt,
+                    @PathVariable Long studentId,
+                    @PathVariable Long assessmentId,
+                    @Valid @RequestBody
+                    SalvarAvaliacaoBiomecanicaRequest request) {
+
+        Long professorUserId = getAuthenticatedUserId(jwt);
+
+        AvaliacaoBiomecanicaCompletaResponse response =
+                avaliacaoService.salvarAvaliacao(
+                        professorUserId,
+                        studentId,
+                        assessmentId,
+                        request
+                );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<AvaliacaoBiomecanicaCompletaResponse>
+            getAssessment(
+                    @AuthenticationPrincipal Jwt jwt,
+                    @PathVariable Long studentId,
+                    @PathVariable Long assessmentId) {
+
+        Long professorUserId = getAuthenticatedUserId(jwt);
+
+        AvaliacaoBiomecanicaCompletaResponse response =
+                avaliacaoService.getAvaliacao(
+                        professorUserId,
+                        studentId,
+                        assessmentId
+                );
+
+        return ResponseEntity.ok(response);
+    }
+
+ private Long getAuthenticatedUserId(Jwt jwt) {
+    return JwtUtils.getUserId(jwt);
+}
+}
+
+===== AvaliacaoCompletaController.java =====
+
+package com.fitsmart.controller;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fitsmart.dto.AvaliacaoCompletaResponse;
+import com.fitsmart.security.JwtUtils;
+import com.fitsmart.service.AvaliacaoCompletaService;
+
+@RestController
+@RequestMapping("/professors/me/students/{studentId}"
+                + "/assessments/{assessmentId}/complete")
+public class AvaliacaoCompletaController {
+
+        private final AvaliacaoCompletaService avaliacaoCompletaService;
+
+        public AvaliacaoCompletaController(
+                        AvaliacaoCompletaService avaliacaoCompletaService) {
+
+                this.avaliacaoCompletaService = avaliacaoCompletaService;
+        }
+
+        @GetMapping
+        public ResponseEntity<AvaliacaoCompletaResponse> getCompleteAssessment(
+                        @AuthenticationPrincipal Jwt jwt,
+                        @PathVariable Long studentId,
+                        @PathVariable Long assessmentId) {
+
+                Long professorUserId = getAuthenticatedUserId(jwt);
+
+                AvaliacaoCompletaResponse response = avaliacaoCompletaService
+                                .getAvaliacaoCompleta(
+                                                professorUserId,
+                                                studentId,
+                                                assessmentId);
+
+                return ResponseEntity.ok(response);
+        }
+
+        private Long getAuthenticatedUserId(Jwt jwt) {
+                return JwtUtils.getUserId(jwt);
+        }
+}
+
+===== AvaliacaoDorController.java =====
+
+package com.fitsmart.controller;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fitsmart.dto.AvaliacaoDorCompletaResponse;
+import com.fitsmart.dto.SalvarAvaliacaoDorRequest;
+import com.fitsmart.security.JwtUtils;
+import com.fitsmart.service.AvaliacaoDorService;
+
+import jakarta.validation.Valid;
+
+@RestController
+@RequestMapping("/professors/me/students/{studentId}"
+                + "/assessments/{assessmentId}/pain-assessment")
+public class AvaliacaoDorController {
+
+        private final AvaliacaoDorService avaliacaoDorService;
+
+        public AvaliacaoDorController(
+                        AvaliacaoDorService avaliacaoDorService) {
+
+                this.avaliacaoDorService = avaliacaoDorService;
+        }
+
+        @PutMapping
+        public ResponseEntity<AvaliacaoDorCompletaResponse> savePainAssessment(
+                        @AuthenticationPrincipal Jwt jwt,
+                        @PathVariable Long studentId,
+                        @PathVariable Long assessmentId,
+                        @Valid @RequestBody SalvarAvaliacaoDorRequest request) {
+
+                Long professorUserId = getAuthenticatedUserId(jwt);
+
+                AvaliacaoDorCompletaResponse response = avaliacaoDorService.salvarAvaliacao(
+                                professorUserId,
+                                studentId,
+                                assessmentId,
+                                request);
+
+                return ResponseEntity.ok(response);
+        }
+
+        @GetMapping
+        public ResponseEntity<AvaliacaoDorCompletaResponse> getPainAssessment(
+                        @AuthenticationPrincipal Jwt jwt,
+                        @PathVariable Long studentId,
+                        @PathVariable Long assessmentId) {
+
+                Long professorUserId = getAuthenticatedUserId(jwt);
+
+                AvaliacaoDorCompletaResponse response = avaliacaoDorService.getAvaliacao(
+                                professorUserId,
+                                studentId,
+                                assessmentId);
+
+                return ResponseEntity.ok(response);
+        }
+
+        private Long getAuthenticatedUserId(Jwt jwt) {
+                return JwtUtils.getUserId(jwt);
+        }
+}
+
+===== AvaliacaoFisicaController.java =====
+
+package com.fitsmart.controller;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import java.util.List;
+
+import com.fitsmart.dto.AvaliacaoFisicaResponse;
+import com.fitsmart.dto.CreateAvaliacaoFisicaRequest;
+import com.fitsmart.dto.UpdateAvaliacaoFisicaRequest;
+import com.fitsmart.security.JwtUtils;
+import com.fitsmart.service.AvaliacaoFisicaService;
+
+import jakarta.validation.Valid;
+
+@RestController
+@RequestMapping("/professors/me/students/{studentId}/assessments")
+public class AvaliacaoFisicaController {
+
+    private final AvaliacaoFisicaService avaliacaoFisicaService;
+
+    public AvaliacaoFisicaController(
+            AvaliacaoFisicaService avaliacaoFisicaService) {
+
+        this.avaliacaoFisicaService = avaliacaoFisicaService;
+    }
+
+    @PostMapping
+    public ResponseEntity<AvaliacaoFisicaResponse> createAssessment(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable Long studentId,
+            @Valid @RequestBody CreateAvaliacaoFisicaRequest request) {
+
+        Long professorUserId = getAuthenticatedUserId(jwt);
+
+        AvaliacaoFisicaResponse response = avaliacaoFisicaService.createAvaliacao(
+                professorUserId,
+                studentId,
+                request);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
+    }
+
+    private Long getAuthenticatedUserId(Jwt jwt) {
+        return JwtUtils.getUserId(jwt);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<AvaliacaoFisicaResponse>> listAssessments(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable Long studentId) {
+
+        Long professorUserId = getAuthenticatedUserId(jwt);
+
+        List<AvaliacaoFisicaResponse> response = avaliacaoFisicaService.listAvaliacoes(
+                professorUserId,
+                studentId);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{assessmentId}")
+    public ResponseEntity<AvaliacaoFisicaResponse> getAssessment(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable Long studentId,
+            @PathVariable Long assessmentId) {
+
+        Long professorUserId = getAuthenticatedUserId(jwt);
+
+        AvaliacaoFisicaResponse response = avaliacaoFisicaService.getAvaliacao(
+                professorUserId,
+                studentId,
+                assessmentId);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{assessmentId}")
+    public ResponseEntity<AvaliacaoFisicaResponse> updateAssessment(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable Long studentId,
+            @PathVariable Long assessmentId,
+            @Valid @RequestBody UpdateAvaliacaoFisicaRequest request) {
+
+        Long professorUserId = getAuthenticatedUserId(jwt);
+
+        AvaliacaoFisicaResponse response = avaliacaoFisicaService.updateAvaliacao(
+                professorUserId,
+                studentId,
+                assessmentId,
+                request);
+
+        return ResponseEntity.ok(response);
+    }
+}
+
+===== AvaliacaoLesaoController.java =====
+
+package com.fitsmart.controller;
+
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fitsmart.dto.AvaliacaoLesaoResponse;
+import com.fitsmart.dto.CreateAvaliacaoLesaoRequest;
+import com.fitsmart.security.JwtUtils;
+import com.fitsmart.service.AvaliacaoLesaoService;
+
+import jakarta.validation.Valid;
+
+@RestController
+@RequestMapping("/professors/me/students/{studentId}/injury-assessments")
+public class AvaliacaoLesaoController {
+
+        private final AvaliacaoLesaoService avaliacaoLesaoService;
+
+        public AvaliacaoLesaoController(
+                        AvaliacaoLesaoService avaliacaoLesaoService) {
+
+                this.avaliacaoLesaoService = avaliacaoLesaoService;
+        }
+
+        @PostMapping
+        public ResponseEntity<AvaliacaoLesaoResponse> createAssessment(
+                        @AuthenticationPrincipal Jwt jwt,
+                        @PathVariable Long studentId,
+                        @Valid @RequestBody CreateAvaliacaoLesaoRequest request) {
+
+                Long professorUserId = getAuthenticatedUserId(jwt);
+
+                AvaliacaoLesaoResponse response = avaliacaoLesaoService.createAvaliacao(
+                                professorUserId,
+                                studentId,
+                                request);
+
+                return ResponseEntity
+                                .status(HttpStatus.CREATED)
+                                .body(response);
+        }
+
+        @GetMapping
+        public ResponseEntity<List<AvaliacaoLesaoResponse>> listAssessments(
+                        @AuthenticationPrincipal Jwt jwt,
+                        @PathVariable Long studentId) {
+
+                Long professorUserId = getAuthenticatedUserId(jwt);
+
+                return ResponseEntity.ok(
+                                avaliacaoLesaoService.listAvaliacoes(
+                                                professorUserId,
+                                                studentId));
+        }
+
+        @GetMapping("/{injuryAssessmentId}")
+        public ResponseEntity<AvaliacaoLesaoResponse> getAssessment(
+                        @AuthenticationPrincipal Jwt jwt,
+                        @PathVariable Long studentId,
+                        @PathVariable Long injuryAssessmentId) {
+
+                Long professorUserId = getAuthenticatedUserId(jwt);
+
+                return ResponseEntity.ok(
+                                avaliacaoLesaoService.getAvaliacao(
+                                                professorUserId,
+                                                studentId,
+                                                injuryAssessmentId));
+        }
+
+        private Long getAuthenticatedUserId(Jwt jwt) {
+                return JwtUtils.getUserId(jwt);
+        }
+}
+
+===== AvaliacaoMobilidadeController.java =====
+
+package com.fitsmart.controller;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fitsmart.dto.AvaliacaoMobilidadeResponse;
+import com.fitsmart.dto.SalvarAvaliacaoMobilidadeRequest;
+import com.fitsmart.security.JwtUtils;
+import com.fitsmart.service.AvaliacaoMobilidadeService;
+
+import jakarta.validation.Valid;
+
+@RestController
+@RequestMapping("/professors/me/students/{studentId}"
+                + "/assessments/{assessmentId}/mobility-assessment")
+public class AvaliacaoMobilidadeController {
+
+        private final AvaliacaoMobilidadeService avaliacaoMobilidadeService;
+
+        public AvaliacaoMobilidadeController(
+                        AvaliacaoMobilidadeService avaliacaoMobilidadeService) {
+
+                this.avaliacaoMobilidadeService = avaliacaoMobilidadeService;
+        }
+
+        @PutMapping
+        public ResponseEntity<AvaliacaoMobilidadeResponse> saveAssessment(
+                        @AuthenticationPrincipal Jwt jwt,
+                        @PathVariable Long studentId,
+                        @PathVariable Long assessmentId,
+                        @Valid @RequestBody SalvarAvaliacaoMobilidadeRequest request) {
+
+                Long professorUserId = getAuthenticatedUserId(jwt);
+
+                AvaliacaoMobilidadeResponse response = avaliacaoMobilidadeService
+                                .salvarAvaliacao(
+                                                professorUserId,
+                                                studentId,
+                                                assessmentId,
+                                                request);
+
+                return ResponseEntity.ok(response);
+        }
+
+        @GetMapping
+        public ResponseEntity<AvaliacaoMobilidadeResponse> getAssessment(
+                        @AuthenticationPrincipal Jwt jwt,
+                        @PathVariable Long studentId,
+                        @PathVariable Long assessmentId) {
+
+                Long professorUserId = getAuthenticatedUserId(jwt);
+
+                AvaliacaoMobilidadeResponse response = avaliacaoMobilidadeService
+                                .getAvaliacao(
+                                                professorUserId,
+                                                studentId,
+                                                assessmentId);
+
+                return ResponseEntity.ok(response);
+        }
+
+        private Long getAuthenticatedUserId(Jwt jwt) {
+                return JwtUtils.getUserId(jwt);
+        }
+}
+
+===== StatusAvaliacaoComplementarController.java =====
+
+package com.fitsmart.controller;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fitsmart.dto.StatusAvaliacaoComplementarResponse;
+import com.fitsmart.security.JwtUtils;
+import com.fitsmart.service.StatusAvaliacaoComplementarService;
+
+@RestController
+@RequestMapping("/professors/me/students/{studentId}"
+                + "/assessments/{assessmentId}/completion-status")
+public class StatusAvaliacaoComplementarController {
+
+        private final StatusAvaliacaoComplementarService statusService;
+
+        public StatusAvaliacaoComplementarController(
+                        StatusAvaliacaoComplementarService statusService) {
+
+                this.statusService = statusService;
+        }
+
+        @GetMapping
+        public ResponseEntity<StatusAvaliacaoComplementarResponse> getStatus(
+                        @AuthenticationPrincipal Jwt jwt,
+                        @PathVariable Long studentId,
+                        @PathVariable Long assessmentId) {
+
+                Long professorUserId = getAuthenticatedUserId(jwt);
+
+                return ResponseEntity.ok(
+                                statusService.getStatus(
+                                                professorUserId,
+                                                studentId,
+                                                assessmentId));
+        }
+
+        @PutMapping("/injury-history")
+        public ResponseEntity<StatusAvaliacaoComplementarResponse> reviewInjuryHistory(
+                        @AuthenticationPrincipal Jwt jwt,
+                        @PathVariable Long studentId,
+                        @PathVariable Long assessmentId) {
+
+                Long professorUserId = getAuthenticatedUserId(jwt);
+
+                return ResponseEntity.ok(
+                                statusService.marcarHistoricoLesoesRevisado(
+                                                professorUserId,
+                                                studentId,
+                                                assessmentId));
+        }
+
+        private Long getAuthenticatedUserId(Jwt jwt) {
+                return JwtUtils.getUserId(jwt);
+        }
+}
+
+===== CreateAvaliacaoBiomecanicaRequest.java =====
+
+package com.fitsmart.dto;
+
+import com.fitsmart.model.enums.GravidadeLesao;
+import com.fitsmart.model.enums.Lateralidade;
+
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
+public record CreateAvaliacaoBiomecanicaRequest(
+
+        @NotNull(message = "A limitaÃ§Ã£o Ã© obrigatÃ³ria")
+        Long limitacaoId,
+
+        @NotNull(message = "A lateralidade Ã© obrigatÃ³ria")
+        Lateralidade lateralidade,
+
+        @NotNull(message = "A gravidade Ã© obrigatÃ³ria")
+        GravidadeLesao gravidade,
+
+        @Size(
+            max = 1000,
+            message = "A observaÃ§Ã£o deve possuir no mÃ¡ximo 1000 caracteres"
+        )
+        String observacao
+
+) {
+}
+
+===== CreateAvaliacaoDorRequest.java =====
+
+package com.fitsmart.dto;
+
+import com.fitsmart.model.enums.Lateralidade;
+
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+
+public record CreateAvaliacaoDorRequest(
+
+        @NotNull(message = "A aÃ§Ã£o articular Ã© obrigatÃ³ria")
+        Long acaoArticularId,
+
+        @NotNull(message = "A lateralidade Ã© obrigatÃ³ria")
+        Lateralidade lateralidade,
+
+        @NotNull(message = "A intensidade da dor Ã© obrigatÃ³ria")
+        @Min(
+            value = 0,
+            message = "A intensidade da dor deve ser no mÃ­nimo 0"
+        )
+        @Max(
+            value = 10,
+            message = "A intensidade da dor deve ser no mÃ¡ximo 10"
+        )
+        Integer intensidade
+
+) {
+}
+
+===== CreateAvaliacaoFisicaRequest.java =====
+
+package com.fitsmart.dto;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import com.fitsmart.model.enums.Objetivo;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
+public record CreateAvaliacaoFisicaRequest(
+
+        @NotNull(message = "O peso Ã© obrigatÃ³rio")
+        @DecimalMin(
+            value = "0.01",
+            message = "O peso deve ser maior que zero"
+        )
+        @Digits(
+            integer = 3,
+            fraction = 2,
+            message = "O peso deve possuir no mÃ¡ximo 3 inteiros e 2 decimais"
+        )
+        BigDecimal peso,
+
+        @NotNull(message = "A altura Ã© obrigatÃ³ria")
+        @DecimalMin(
+            value = "0.01",
+            message = "A altura deve ser maior que zero"
+        )
+        @Digits(
+            integer = 3,
+            fraction = 2,
+            message = "A altura deve possuir no mÃ¡ximo 3 inteiros e 2 decimais"
+        )
+        BigDecimal altura,
+
+        @NotNull(message = "O objetivo Ã© obrigatÃ³rio")
+        Objetivo objetivo,
+
+        @Size(
+            max = 2000,
+            message = "As observaÃ§Ãµes devem possuir no mÃ¡ximo 2000 caracteres"
+        )
+        String observacoes,
+
+        @NotNull(message = "A informaÃ§Ã£o de aptidÃ£o Ã© obrigatÃ³ria")
+        Boolean apto,
+
+        @NotNull(message = "A lista de dobras Ã© obrigatÃ³ria")
+        @Size(
+            min = 7,
+            max = 9,
+            message = "Informe entre 7 e 9 dobras cutÃ¢neas"
+        )
+        List<@Valid CreateDobraCutaneaRequest> dobrasCutaneas,
+
+        @NotNull(message = "A lista de circunferÃªncias Ã© obrigatÃ³ria")
+        List<@Valid CreateCircunferenciaRequest> circunferencias,
+
+        @NotNull(message = "A lista de fotos Ã© obrigatÃ³ria")
+        @Size(
+            max = 4,
+            message = "A avaliaÃ§Ã£o permite no mÃ¡ximo 4 fotos"
+        )
+        List<@Valid CreateFotoAvaliacaoRequest> fotos
+
+) {
+}
+
+===== CreateAvaliacaoLesaoRequest.java =====
+
+package com.fitsmart.dto;
+
+import java.time.LocalDate;
+
+import com.fitsmart.model.enums.GravidadeLesao;
+import com.fitsmart.model.enums.Lateralidade;
+import com.fitsmart.model.enums.StatusLesao;
+
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Size;
+
+public record CreateAvaliacaoLesaoRequest(
+
+        @NotNull(message = "A lesÃ£o Ã© obrigatÃ³ria")
+        Long lesaoId,
+
+        @NotNull(message = "A lateralidade Ã© obrigatÃ³ria")
+        Lateralidade lateralidade,
+
+        @NotNull(message = "O status da lesÃ£o Ã© obrigatÃ³rio")
+        StatusLesao statusLesao,
+
+        @NotNull(message = "A gravidade Ã© obrigatÃ³ria")
+        GravidadeLesao gravidade,
+
+        @PastOrPresent(
+            message = "A data de inÃ­cio nÃ£o pode estar no futuro"
+        )
+        LocalDate dataInicio,
+
+        @NotNull(message = "Informe se existe liberaÃ§Ã£o mÃ©dica")
+        Boolean liberacaoMedica,
+
+        @NotNull(message = "Informe se existe dor atualmente")
+        Boolean dorAtualmente,
+
+        @Size(
+            max = 2000,
+            message = "As observaÃ§Ãµes devem possuir no mÃ¡ximo 2000 caracteres"
+        )
+        String observacoes
+
+) {
+}
+
+===== CreateFotoAvaliacaoRequest.java =====
+
+package com.fitsmart.dto;
+
+import com.fitsmart.model.enums.TipoFotoAvaliacao;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
+public record CreateFotoAvaliacaoRequest(
+
+        @NotNull(message = "O tipo da foto Ã© obrigatÃ³rio")
+        TipoFotoAvaliacao tipo,
+
+        @NotBlank(message = "O caminho da foto Ã© obrigatÃ³rio")
+        @Size(
+            max = 500,
+            message = "O caminho da foto deve possuir no mÃ¡ximo 500 caracteres"
+        )
+        String caminhoArquivo
+
+) {
+}
+
+===== SalvarAvaliacaoBiomecanicaRequest.java =====
+
+package com.fitsmart.dto;
+
+import java.util.List;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
+public record SalvarAvaliacaoBiomecanicaRequest(
+
+        @NotNull(message = "A lista de itens avaliados Ã© obrigatÃ³ria")
+        @Size(
+            max = 30,
+            message = "A avaliaÃ§Ã£o permite no mÃ¡ximo 30 itens"
+        )
+        List<@Valid CreateAvaliacaoBiomecanicaRequest> itens
+
+) {
+}
+
+===== SalvarAvaliacaoDorRequest.java =====
+
+package com.fitsmart.dto;
+
+import java.util.List;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
+public record SalvarAvaliacaoDorRequest(
+
+        @NotNull(message = "A lista de itens avaliados Ã© obrigatÃ³ria")
+        @Size(
+            max = 30,
+            message = "A avaliaÃ§Ã£o permite no mÃ¡ximo 30 itens"
+        )
+        List<@Valid CreateAvaliacaoDorRequest> itens
+
+) {
+}
+
+===== SalvarAvaliacaoMobilidadeRequest.java =====
+
+package com.fitsmart.dto;
+
+import com.fitsmart.model.enums.NivelMobilidade;
+
+import jakarta.validation.constraints.Size;
+
+public record SalvarAvaliacaoMobilidadeRequest(
+
+        NivelMobilidade cervical,
+
+        NivelMobilidade ombro,
+
+        NivelMobilidade cotovelo,
+
+        NivelMobilidade punho,
+
+        NivelMobilidade toracica,
+
+        NivelMobilidade lombar,
+
+        NivelMobilidade quadril,
+
+        NivelMobilidade joelho,
+
+        NivelMobilidade tornozelo,
+
+        @Size(
+            max = 2000,
+            message = "A observaÃ§Ã£o deve possuir no mÃ¡ximo 2000 caracteres"
+        )
+        String observacao
+
+) {
+}
+
+===== SalvarEquipamentoRequest.java =====
+
+package com.fitsmart.dto;
+
+import com.fitsmart.model.enums.TipoEquipamento;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+public record SalvarEquipamentoRequest(
+
+        @NotBlank(message = "O nome Ã© obrigatÃ³rio")
+        String nome,
+
+        @NotNull(message = "O tipo Ã© obrigatÃ³rio")
+        TipoEquipamento tipo
+
+) {
+}
+
+===== SalvarExercicioRequest.java =====
+
+package com.fitsmart.dto;
+
+import java.util.List;
+
+import com.fitsmart.model.enums.AmplitudeMovimento;
+import com.fitsmart.model.enums.CargaAxial;
+import com.fitsmart.model.enums.DificuldadeExercicio;
+import com.fitsmart.model.enums.Estabilidade;
+import com.fitsmart.model.enums.GrupoMuscular;
+import com.fitsmart.model.enums.Impacto;
+import com.fitsmart.model.enums.NivelAtivacao;
+import com.fitsmart.model.enums.NivelExperiencia;
+import com.fitsmart.model.enums.Objetivo;
+import com.fitsmart.model.enums.PlanoMovimento;
+import com.fitsmart.model.enums.PressaoAbdominal;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+
+public record SalvarExercicioRequest(
+
+        @NotBlank(message = "O nome Ã© obrigatÃ³rio")
+        String nome,
+
+        String descricao,
+
+        String caminhoImagem,
+
+        String urlVideo,
+
+        @NotNull(message = "O plano de movimento Ã© obrigatÃ³rio")
+        PlanoMovimento planoMovimento,
+
+        @NotNull(message = "A carga axial Ã© obrigatÃ³ria")
+        CargaAxial cargaAxial,
+
+        @NotNull(message = "A pressÃ£o abdominal Ã© obrigatÃ³ria")
+        PressaoAbdominal pressaoAbdominal,
+
+        @NotNull(message = "A estabilidade exigida Ã© obrigatÃ³ria")
+        Estabilidade estabilidadeExigida,
+
+        @NotNull(message = "O nÃ­vel de experiÃªncia Ã© obrigatÃ³rio")
+        NivelExperiencia nivelExperiencia,
+
+        @NotNull(message = "A dificuldade Ã© obrigatÃ³ria")
+        DificuldadeExercicio dificuldade,
+
+        @NotNull(message = "O impacto cervical Ã© obrigatÃ³rio")
+        Impacto impactoCervical,
+
+        @NotNull(message = "O impacto no ombro Ã© obrigatÃ³rio")
+        Impacto impactoOmbro,
+
+        @NotNull(message = "O impacto no cotovelo Ã© obrigatÃ³rio")
+        Impacto impactoCotovelo,
+
+        @NotNull(message = "O impacto no punho Ã© obrigatÃ³rio")
+        Impacto impactoPunho,
+
+        @NotNull(message = "O impacto torÃ¡cico Ã© obrigatÃ³rio")
+        Impacto impactoToracica,
+
+        @NotNull(message = "O impacto lombar Ã© obrigatÃ³rio")
+        Impacto impactoLombar,
+
+        @NotNull(message = "O impacto no quadril Ã© obrigatÃ³rio")
+        Impacto impactoQuadril,
+
+        @NotNull(message = "O impacto no joelho Ã© obrigatÃ³rio")
+        Impacto impactoJoelho,
+
+        @NotNull(message = "O impacto no tornozelo Ã© obrigatÃ³rio")
+        Impacto impactoTornozelo,
+
+        @NotNull(message = "A lista de equipamentos Ã© obrigatÃ³ria")
+        List<@Valid EquipamentoItem> equipamentos,
+
+        @NotNull(message = "A lista de grupos musculares Ã© obrigatÃ³ria")
+        List<@Valid GrupoMuscularItem> gruposMusculares,
+
+        @NotNull(message = "A lista de aÃ§Ãµes articulares Ã© obrigatÃ³ria")
+        List<@Valid AcaoArticularItem> acoesArticulares,
+
+        @NotEmpty(message = "Informe ao menos um objetivo do exercÃ­cio")
+        List<@NotNull(message = "O objetivo nÃ£o pode ser nulo") Objetivo> objetivos
+
+) {
+
+    public record EquipamentoItem(
+
+            @NotNull(message = "O equipamento Ã© obrigatÃ³rio")
+            Long equipamentoId
+
+    ) {
+    }
+
+    public record GrupoMuscularItem(
+
+            @NotNull(message = "O grupo muscular Ã© obrigatÃ³rio")
+            GrupoMuscular grupoMuscular,
+
+            @NotNull(message = "O nÃ­vel de ativaÃ§Ã£o Ã© obrigatÃ³rio")
+            NivelAtivacao nivelAtivacao
+
+    ) {
+    }
+
+    public record AcaoArticularItem(
+
+            @NotNull(message = "A aÃ§Ã£o articular Ã© obrigatÃ³ria")
+            Long acaoArticularId,
+
+            @NotNull(message = "A amplitude de movimento Ã© obrigatÃ³ria")
+            AmplitudeMovimento amplitudeMovimento
+
+    ) {
+    }
+}
+
+===== UpdateAvaliacaoFisicaRequest.java =====
+
+package com.fitsmart.dto;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import com.fitsmart.model.enums.Objetivo;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
+public record UpdateAvaliacaoFisicaRequest(
+
+        @NotNull(message = "O peso Ã© obrigatÃ³rio")
+        @DecimalMin(
+            value = "0.01",
+            message = "O peso deve ser maior que zero"
+        )
+        @Digits(
+            integer = 3,
+            fraction = 2,
+            message = "O peso deve possuir no mÃ¡ximo 3 inteiros e 2 decimais"
+        )
+        BigDecimal peso,
+
+        @NotNull(message = "A altura Ã© obrigatÃ³ria")
+        @DecimalMin(
+            value = "0.01",
+            message = "A altura deve ser maior que zero"
+        )
+        @Digits(
+            integer = 3,
+            fraction = 2,
+            message = "A altura deve possuir no mÃ¡ximo 3 inteiros e 2 decimais"
+        )
+        BigDecimal altura,
+
+        @NotNull(message = "O objetivo Ã© obrigatÃ³rio")
+        Objetivo objetivo,
+
+        @Size(
+            max = 2000,
+            message = "As observaÃ§Ãµes devem possuir no mÃ¡ximo 2000 caracteres"
+        )
+        String observacoes,
+
+        @NotNull(message = "A informaÃ§Ã£o de aptidÃ£o Ã© obrigatÃ³ria")
+        Boolean apto,
+
+        @NotNull(message = "A lista de dobras Ã© obrigatÃ³ria")
+        @Size(
+            min = 7,
+            max = 9,
+            message = "Informe entre 7 e 9 dobras cutÃ¢neas"
+        )
+        List<@Valid CreateDobraCutaneaRequest> dobrasCutaneas,
+
+        @NotNull(message = "A lista de circunferÃªncias Ã© obrigatÃ³ria")
+        List<@Valid CreateCircunferenciaRequest> circunferencias,
+
+        @NotNull(message = "A lista de fotos Ã© obrigatÃ³ria")
+        @Size(
+            max = 4,
+            message = "A avaliaÃ§Ã£o permite no mÃ¡ximo 4 fotos"
+        )
+        List<@Valid CreateFotoAvaliacaoRequest> fotos
+
+) {
+}
+
+===== GravidadeLesao.java =====
+
+package com.fitsmart.model.enums;
+
+public enum GravidadeLesao {
+
+    LEVE,
+    MODERADA,
+    GRAVE
+}
+
+===== Lateralidade.java =====
+
+package com.fitsmart.model.enums;
+
+public enum Lateralidade {
+
+    ESQUERDO,
+    DIREITO,
+    BILATERAL,
+    CENTRAL
+
+}
+
+===== NivelMobilidade.java =====
+
+package com.fitsmart.model.enums;
+
+public enum NivelMobilidade {
+
+    RUIM,
+    REGULAR,
+    BOM,
+    EXCELENTE
+}
+
+===== StatusLesao.java =====
+
+package com.fitsmart.model.enums;
+
+public enum StatusLesao {
+
+    ATIVA,
+    EM_TRATAMENTO,
+    RECUPERADA,
+    CRONICA
+}
+
+===== StatusAvaliacaoComplementarService.java =====
+
+package com.fitsmart.service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.fitsmart.dto.StatusAvaliacaoComplementarResponse;
+import com.fitsmart.exception.ResourceNotFoundException;
+import com.fitsmart.model.AvaliacaoFisica;
+import com.fitsmart.model.StatusAvaliacaoComplementar;
+import com.fitsmart.repository.AvaliacaoFisicaRepository;
+import com.fitsmart.repository.StatusAvaliacaoComplementarRepository;
+
+@Service
+public class StatusAvaliacaoComplementarService {
+
+    private final StatusAvaliacaoComplementarRepository
+            statusRepository;
+
+    private final AvaliacaoFisicaRepository
+            avaliacaoFisicaRepository;
+
+    public StatusAvaliacaoComplementarService(
+            StatusAvaliacaoComplementarRepository statusRepository,
+            AvaliacaoFisicaRepository avaliacaoFisicaRepository) {
+
+        this.statusRepository = statusRepository;
+        this.avaliacaoFisicaRepository =
+                avaliacaoFisicaRepository;
+    }
+
+    private AvaliacaoFisica findAvaliacaoDoProfessor(
+            Long professorUserId,
+            Long alunoId,
+            Long avaliacaoId) {
+
+        return avaliacaoFisicaRepository
+                .findByIdAndAluno_IdAndProfessor_User_Id(
+                        avaliacaoId,
+                        alunoId,
+                        professorUserId
+                )
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "AvaliaÃ§Ã£o fÃ­sica nÃ£o encontrada"
+                        )
+                );
+    }
+
+    private StatusAvaliacaoComplementar obterOuCriar(
+            AvaliacaoFisica avaliacaoFisica) {
+
+        return statusRepository
+                .findByAvaliacaoFisica_Id(
+                        avaliacaoFisica.getId()
+                )
+                .orElseGet(() ->
+                        new StatusAvaliacaoComplementar(
+                                avaliacaoFisica
+                        )
+                );
+    }
+
+    private List<String> montarPendencias(
+            boolean dorConcluida,
+            boolean biomecanicaConcluida,
+            boolean mobilidadeConcluida,
+            boolean historicoLesoesRevisado) {
+
+        List<String> pendencias = new ArrayList<>();
+
+        if (!dorConcluida) {
+            pendencias.add("AVALIACAO_DOR");
+        }
+
+        if (!biomecanicaConcluida) {
+            pendencias.add("AVALIACAO_BIOMECANICA");
+        }
+
+        if (!mobilidadeConcluida) {
+            pendencias.add("AVALIACAO_MOBILIDADE");
+        }
+
+        if (!historicoLesoesRevisado) {
+            pendencias.add("HISTORICO_LESOES");
+        }
+
+        return List.copyOf(pendencias);
+    }
+
+    private StatusAvaliacaoComplementarResponse montarResponse(
+            AvaliacaoFisica avaliacaoFisica,
+            StatusAvaliacaoComplementar status) {
+
+        boolean dorConcluida = status != null
+                && status.isDorConcluida();
+
+        boolean biomecanicaConcluida = status != null
+                && status.isBiomecanicaConcluida();
+
+        boolean mobilidadeConcluida = status != null
+                && status.isMobilidadeConcluida();
+
+        boolean historicoLesoesRevisado = status != null
+                && status.isHistoricoLesoesRevisado();
+
+        List<String> pendencias = montarPendencias(
+                dorConcluida,
+                biomecanicaConcluida,
+                mobilidadeConcluida,
+                historicoLesoesRevisado
+        );
+
+        return new StatusAvaliacaoComplementarResponse(
+                avaliacaoFisica.getId(),
+                avaliacaoFisica.getAluno().getId(),
+                dorConcluida,
+                biomecanicaConcluida,
+                mobilidadeConcluida,
+                historicoLesoesRevisado,
+                pendencias.isEmpty(),
+                pendencias,
+                status == null
+                        ? null
+                        : status.getDataUltimaAtualizacao()
+        );
+    }
+
+    @Transactional
+    public void marcarDorConcluida(
+            AvaliacaoFisica avaliacaoFisica) {
+
+        StatusAvaliacaoComplementar status =
+                obterOuCriar(avaliacaoFisica);
+
+        status.setDorConcluida(true);
+
+        statusRepository.save(status);
+    }
+
+    @Transactional
+    public void marcarBiomecanicaConcluida(
+            AvaliacaoFisica avaliacaoFisica) {
+
+        StatusAvaliacaoComplementar status =
+                obterOuCriar(avaliacaoFisica);
+
+        status.setBiomecanicaConcluida(true);
+
+        statusRepository.save(status);
+    }
+
+    @Transactional
+    public void atualizarMobilidadeConcluida(
+            AvaliacaoFisica avaliacaoFisica,
+            boolean concluida) {
+
+        StatusAvaliacaoComplementar status =
+                obterOuCriar(avaliacaoFisica);
+
+        status.setMobilidadeConcluida(concluida);
+
+        statusRepository.save(status);
+    }
+
+    @Transactional
+    public StatusAvaliacaoComplementarResponse
+            marcarHistoricoLesoesRevisado(
+                    Long professorUserId,
+                    Long alunoId,
+                    Long avaliacaoId) {
+
+        AvaliacaoFisica avaliacaoFisica =
+                findAvaliacaoDoProfessor(
+                        professorUserId,
+                        alunoId,
+                        avaliacaoId
+                );
+
+        StatusAvaliacaoComplementar status =
+                obterOuCriar(avaliacaoFisica);
+
+        status.setHistoricoLesoesRevisado(true);
+
+        StatusAvaliacaoComplementar statusSalvo =
+                statusRepository.save(status);
+
+        return montarResponse(
+                avaliacaoFisica,
+                statusSalvo
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public StatusAvaliacaoComplementarResponse getStatus(
+            Long professorUserId,
+            Long alunoId,
+            Long avaliacaoId) {
+
+        AvaliacaoFisica avaliacaoFisica =
+                findAvaliacaoDoProfessor(
+                        professorUserId,
+                        alunoId,
+                        avaliacaoId
+                );
+
+        StatusAvaliacaoComplementar status =
+                statusRepository
+                        .findByAvaliacaoFisica_Id(
+                                avaliacaoId
+                        )
+                        .orElse(null);
+
+        return montarResponse(
+                avaliacaoFisica,
+                status
+        );
+    }
+}

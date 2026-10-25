@@ -20,6 +20,8 @@ import com.fitsmart.dto.TreinoResponseDTO;
 import com.fitsmart.security.JwtUtils;
 import com.fitsmart.service.TreinoService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/professors/me/students/{studentId}/workouts")
 public class TreinoController {
@@ -35,7 +37,7 @@ public class TreinoController {
     public ResponseEntity<TreinoResponseDTO> criarRascunho(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long studentId,
-            @RequestBody CriarTreinoDTO dto) {
+            @Valid @RequestBody CriarTreinoDTO dto) { // CORREÇÃO: Adicionado @Valid
 
         Long professorUserId = JwtUtils.getUserId(jwt);
         TreinoResponseDTO response = treinoService.criarRascunho(professorUserId, studentId, dto);
@@ -69,7 +71,7 @@ public class TreinoController {
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long studentId,
             @PathVariable Long workoutId,
-            @RequestBody AtualizarTreinoDTO dto) {
+            @Valid @RequestBody AtualizarTreinoDTO dto) { // CORREÇÃO: Adicionado @Valid
 
         Long professorUserId = JwtUtils.getUserId(jwt);
         return ResponseEntity.ok(treinoService.atualizarTreino(professorUserId, studentId, workoutId, dto));

@@ -12,6 +12,7 @@ import com.fitsmart.dto.CriarTreinoDTO;
 import com.fitsmart.dto.ItemTreinoInputDTO;
 import com.fitsmart.dto.ItemTreinoResponseDTO;
 import com.fitsmart.dto.TreinoResponseDTO;
+import com.fitsmart.exception.ResourceNotFoundException;
 import com.fitsmart.model.Aluno;
 import com.fitsmart.model.Exercicio;
 import com.fitsmart.model.ItemTreino;
@@ -45,10 +46,10 @@ public class TreinoService {
     @Transactional
     public TreinoResponseDTO criarRascunho(Long professorUserId, Long alunoId, CriarTreinoDTO dto) {
         Professor professor = professorRepository.findByUser_Id(professorUserId)
-                .orElseThrow(() -> new RuntimeException("Professor não encontrado para o usuário: " + professorUserId));
+                .orElseThrow(() -> new ResourceNotFoundException("Professor não encontrado para o usuário: " + professorUserId));
 
         Aluno aluno = alunoRepository.findByIdAndProfessor_User_Id(alunoId, professorUserId)
-                .orElseThrow(() -> new RuntimeException("Aluno não encontrado ou não vinculado a este professor"));
+                .orElseThrow(() -> new ResourceNotFoundException("Aluno não encontrado ou não vinculado a este professor"));
 
         Treino treino = new Treino();
         treino.setAluno(aluno);
@@ -68,7 +69,6 @@ public class TreinoService {
         return converterParaDTO(treinoSalvo);
     }
 
-    // Consulta do professor sobre os treinos de um aluno
     @Transactional(readOnly = true)
     public List<TreinoResponseDTO> listarTreinosDoAluno(Long professorUserId, Long alunoId) {
         return treinoRepository.findAllByAluno_IdAndProfessor_User_IdOrderByDataCriacaoDesc(alunoId, professorUserId)
@@ -77,7 +77,6 @@ public class TreinoService {
                 .collect(Collectors.toList());
     }
 
-    // Consulta direta pelo Aluno autenticado (usado no StudentWorkoutController)
     @Transactional(readOnly = true)
     public List<TreinoResponseDTO> listarTreinosDoAluno(Long studentUserId) {
         return treinoRepository.findAllByAluno_User_Id(studentUserId)
@@ -86,47 +85,69 @@ public class TreinoService {
                 .collect(Collectors.toList());
     }
 
-    // Detalhes do treino acessado pelo Professor
     @Transactional(readOnly = true)
     public TreinoResponseDTO buscarTreinoPorId(Long professorUserId, Long alunoId, Long treinoId) {
         Treino treino = treinoRepository.findByIdAndAluno_IdAndProfessor_User_Id(treinoId, alunoId, professorUserId)
-                .orElseThrow(() -> new RuntimeException("Treino não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Treino não encontrado"));
         return converterParaDTO(treino);
     }
 
-    // Detalhes do treino acessado diretamente pelo Aluno
     @Transactional(readOnly = true)
     public TreinoResponseDTO buscarTreinoPorAluno(Long studentUserId, Long treinoId) {
         Treino treino = treinoRepository.findByIdAndAluno_User_Id(treinoId, studentUserId)
-                .orElseThrow(() -> new RuntimeException("Treino não encontrado para este aluno"));
+                .orElseThrow(() -> new ResourceNotFoundException("Treino não encontrado para este aluno"));
         return converterParaDTO(treino);
     }
 
     @Transactional
     public TreinoResponseDTO atualizarTreino(Long professorUserId, Long alunoId, Long treinoId, AtualizarTreinoDTO dto) {
-        Treino treino = treinoRepository.findByIdAndAluno_IdAndProfessor_User_Id(treinoId, alunoId, professorUserId)
-                .orElseThrow(() -> new RuntimeException("Treino não encontrado"));
+        Treino treinoExistente = treinoRepository.findByIdAndAluno_IdAndProfessor_User_Id(treinoId, alunoId, professorUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Treino não encontrado"));
 
-        treino.setObservacoes(dto.getObservacoes());
-        treino.getItens().clear();
+        // RN03: Se o treino já foi publicado, arquiva o antigo e gera uma nova versão
+        if (treinoExistente.getStatus() == StatusTreino.ATIVO || treinoExistente.getStatus() == StatusTreino.PUBLICADO) {
+            treinoExistente.setStatus(StatusTreino.HISTORICO);
+            treinoRepository.save(treinoExistente);
+
+            Treino novoTreino = new Treino();
+            novoTreino.setAluno(treinoExistente.getAluno());
+            novoTreino.setProfessor(treinoExistente.getProfessor());
+            novoTreino.setObservacoes(dto.getObservacoes());
+            novoTreino.setStatus(StatusTreino.RASCUNHO);
+            novoTreino.setDataCriacao(LocalDateTime.now());
+
+            if (dto.getItens() != null) {
+                for (ItemTreinoInputDTO itemDto : dto.getItens()) {
+                    ItemTreino item = criarItemTreino(itemDto);
+                    novoTreino.adicionarItem(item);
+                }
+            }
+
+            Treino novoSalvo = treinoRepository.save(novoTreino);
+            return converterParaDTO(novoSalvo);
+        }
+
+        // Se for rascunho, permite edição direta
+        treinoExistente.setObservacoes(dto.getObservacoes());
+        treinoExistente.getItens().clear();
 
         if (dto.getItens() != null) {
             for (ItemTreinoInputDTO itemDto : dto.getItens()) {
                 ItemTreino item = criarItemTreino(itemDto);
-                treino.adicionarItem(item);
+                treinoExistente.adicionarItem(item);
             }
         }
 
-        Treino treinoAtualizado = treinoRepository.save(treino);
+        Treino treinoAtualizado = treinoRepository.save(treinoExistente);
         return converterParaDTO(treinoAtualizado);
     }
 
     @Transactional
     public TreinoResponseDTO publicarTreino(Long professorUserId, Long alunoId, Long treinoId) {
         Treino treino = treinoRepository.findByIdAndAluno_IdAndProfessor_User_Id(treinoId, alunoId, professorUserId)
-                .orElseThrow(() -> new RuntimeException("Treino não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Treino não encontrado"));
 
-        treino.setStatus(StatusTreino.ATIVO);
+        treino.setStatus(StatusTreino.PUBLICADO);
         treino.setDataPublicacao(LocalDateTime.now());
 
         Treino treinoPublicado = treinoRepository.save(treino);
@@ -135,7 +156,7 @@ public class TreinoService {
 
     private ItemTreino criarItemTreino(ItemTreinoInputDTO itemDto) {
         Exercicio exercicio = exercicioRepository.findById(itemDto.getExercicioId())
-                .orElseThrow(() -> new RuntimeException("Exercício não encontrado com ID: " + itemDto.getExercicioId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Exercício não encontrado com ID: " + itemDto.getExercicioId()));
 
         ItemTreino item = new ItemTreino();
         item.setExercicio(exercicio);

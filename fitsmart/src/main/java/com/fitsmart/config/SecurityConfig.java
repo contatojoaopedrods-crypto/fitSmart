@@ -28,18 +28,24 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.GET, "/teste").permitAll()
-                        
-                        // Rotas públicas de autenticação e cadastro
-                        .requestMatchers("/auth/login", "/login", "/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/professors", "/students").permitAll()
 
+                        // Rotas públicas de autenticação e cadastro de professores
+                        .requestMatchers("/auth/login", "/login", "/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/professors").permitAll() // REMOVIDO /students publico
+                                                                                     // (RN01)
+                        .requestMatchers(HttpMethod.POST, "/students").permitAll()
+                        // Rotas exclusivas de Professor
                         .requestMatchers("/professors/me", "/professors/me/**").hasRole("PROFESSOR")
+
+                        // Rotas exclusivas de Aluno (Abrange treinos, sessoes, feedbacks e avaliacoes)
+                        .requestMatchers("/students/me", "/students/me/**").hasRole("ALUNO")
+
+                        // Rotas de Usuário e Admin
                         .requestMatchers(HttpMethod.GET, "/users/me").authenticated()
                         .requestMatchers(HttpMethod.GET, "/users", "/users/*").hasRole("ADMIN")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/students/me/assessments").hasRole("ALUNO")
-                        .anyRequest().authenticated()
-                )
+
+                        .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
 

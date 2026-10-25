@@ -45,7 +45,8 @@ public class StudentWorkoutController {
     @GetMapping("/workouts")
     public ResponseEntity<List<TreinoResponseDTO>> getWorkouts(@AuthenticationPrincipal Jwt jwt) {
         Long studentUserId = getAuthenticatedStudentUserId(jwt);
-        List<TreinoResponseDTO> treinos = treinoService.listarTreinosDoAluno(studentUserId, studentUserId);
+        // CORREÇÃO: Utiliza o método dedicado ao aluno com apenas 1 argumento (studentUserId)
+        List<TreinoResponseDTO> treinos = treinoService.listarTreinosDoAluno(studentUserId);
         return ResponseEntity.ok(treinos);
     }
 
@@ -55,7 +56,8 @@ public class StudentWorkoutController {
             @PathVariable Long id,
             @AuthenticationPrincipal Jwt jwt) {
         Long studentUserId = getAuthenticatedStudentUserId(jwt);
-        TreinoResponseDTO treino = treinoService.buscarTreinoPorId(studentUserId, id, id);
+        // CORREÇÃO: Utiliza o método buscarTreinoPorAluno(studentUserId, id)
+        TreinoResponseDTO treino = treinoService.buscarTreinoPorAluno(studentUserId, id);
         return ResponseEntity.ok(treino);
     }
 

@@ -27,6 +27,9 @@ import java.util.List;
 
 import jakarta.persistence.CascadeType;
 
+import org.hibernate.annotations.Generated;
+import org.hibernate.generator.EventType;
+
 @Entity
 @Table(name = "avaliacao_fisica")
 @Getter
@@ -56,7 +59,8 @@ public class AvaliacaoFisica {
     @Column(nullable = false, precision = 5, scale = 2)
     private BigDecimal altura;
 
-    @Column(nullable = false, precision = 5, scale = 2)
+    @Generated(event = { EventType.INSERT, EventType.UPDATE })
+    @Column(name = "imc", insertable = false, updatable = false)
     private BigDecimal imc;
 
     @Column(name = "percentual_gordura", precision = 5, scale = 2)
@@ -136,4 +140,5 @@ public class AvaliacaoFisica {
     private void beforeUpdate() {
         dataUltimaAlteracao = LocalDateTime.now();
     }
+
 }

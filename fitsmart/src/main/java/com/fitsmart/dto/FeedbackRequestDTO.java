@@ -1,23 +1,27 @@
 package com.fitsmart.dto;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+
 public class FeedbackRequestDTO {
 
-    private Integer nivelDor;        
-    private String dificuldade;       
-    private String comentarios;        
+    @NotNull(message = "O nível de dor é obrigatório")
+    @Min(value = 0, message = "O nível de dor mínimo é 0")
+    @Max(value = 10, message = "O nível de dor máximo é 10")
+    private Integer nivelDor;
 
-    
-    public FeedbackRequestDTO() {
-    }
+    private String dificuldade;
+    private String comentarios;
 
-    
+    public FeedbackRequestDTO() {}
+
     public FeedbackRequestDTO(Integer nivelDor, String dificuldade, String comentarios) {
         this.nivelDor = nivelDor;
         this.dificuldade = dificuldade;
         this.comentarios = comentarios;
     }
 
-    
     public Integer getNivelDor() {
         return nivelDor;
     }
